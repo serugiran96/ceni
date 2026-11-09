@@ -18,11 +18,30 @@
       "historia": {
         "antecedentes_perinatales": "Nacido a término por cesárea, 3.2 kg, sin complicaciones.",
         "desarrollo_psicomotor": "Caminó a los 14 meses. Primeras palabras a los 2 años; a los 3 años usaba palabras sueltas.",
-        "antecedentes_personales": ["Sin hospitalizaciones", "Audiometría normal (agosto de 2026)"],
-        "antecedentes_familiares": ["Primo materno con diagnóstico de TEA"],
-        "alergias": ["No conocidas"],
-        "diagnosticos": ["Trastorno del espectro autista (TEA), nivel 1 de apoyo", "Insomnio de mantenimiento"],
-        "terapias": ["Terapia de lenguaje, 2 veces por semana", "Terapia ocupacional, 1 vez por semana"]
+        "antecedentes_personales": [
+          "Sin hospitalizaciones",
+          "Audiometría normal (agosto de 2026)"
+        ],
+        "antecedentes_familiares": [
+          "Primo materno con diagnóstico de TEA"
+        ],
+        "alergias": [
+          "No conocidas"
+        ],
+        "diagnosticos": [
+          {
+            "descripcion": "Trastorno del espectro autista (TEA), nivel 1 de apoyo",
+            "cie10": "F84.0"
+          },
+          {
+            "descripcion": "Insomnio de mantenimiento",
+            "cie10": "G47.0"
+          }
+        ],
+        "terapias": [
+          "Terapia de lenguaje, 2 veces por semana",
+          "Terapia ocupacional, 1 vez por semana"
+        ]
       },
       "atenciones": [
         {
@@ -30,15 +49,46 @@
           "nota": {
             "resumen": "Primer control después del diagnóstico. El sueño es la queja principal; se inician terapias y melatonina.",
             "motivo": "Control después del diagnóstico de TEA",
-            "relato": ["Se despierta 3 veces por noche", "Usa palabras sueltas y señala para pedir", "Crisis largas cuando cambian la ruta al nido"],
-            "examen": ["Contacto visual breve", "Juego repetitivo con carros", "Examen neurológico sin alteraciones"],
-            "diagnosticos": ["TEA, nivel 1 de apoyo", "Insomnio de mantenimiento"],
-            "plan": ["Iniciar terapia de lenguaje 2 veces por semana", "Iniciar terapia ocupacional 1 vez por semana", "Rutina fija para dormir y sin pantallas una hora antes", "Audiometría"],
+            "relato": [
+              "Se despierta 3 veces por noche",
+              "Usa palabras sueltas y señala para pedir",
+              "Crisis largas cuando cambian la ruta al nido"
+            ],
+            "examen": [
+              "Contacto visual breve",
+              "Juego repetitivo con carros",
+              "Examen neurológico sin alteraciones"
+            ],
+            "diagnosticos": [
+              {
+                "descripcion": "TEA, nivel 1 de apoyo",
+                "cie10": "F84.0"
+              },
+              {
+                "descripcion": "Insomnio de mantenimiento",
+                "cie10": "G47.0"
+              }
+            ],
+            "plan": [
+              "Iniciar terapia de lenguaje 2 veces por semana",
+              "Iniciar terapia ocupacional 1 vez por semana",
+              "Rutina fija para dormir y sin pantallas una hora antes",
+              "Audiometría"
+            ],
             "proximo_control": "En 2 meses",
+            "proximo_control_semanas": 8,
             "por_confirmar": []
           },
           "receta": [
-            {"medicamento": "Melatonina 3 mg", "dosis": "1 tableta", "frecuencia": "Cada noche, 30 minutos antes de dormir", "duracion": "2 meses", "indicaciones": "Tomar con agua"}
+            {
+              "medicamento": "Melatonina 3 mg",
+              "forma_farmaceutica": "Tableta",
+              "via": "Oral",
+              "dosis": "1 tableta",
+              "frecuencia": "Cada noche, 30 minutos antes de dormir",
+              "duracion": "2 meses",
+              "indicaciones": "Tomar con agua"
+            }
           ]
         },
         {
@@ -46,15 +96,39 @@
           "nota": {
             "resumen": "Mejoría del sueño con melatonina y rutina. Empieza a combinar dos palabras. Audiometría normal.",
             "motivo": "Control",
-            "relato": ["Se despierta 1 vez por noche", "Dice \"más agua\" y \"mamá ven\"", "Las crisis por cambios duran menos"],
-            "examen": ["Responde a su nombre", "Mejor contacto visual durante el juego"],
-            "diagnosticos": ["TEA, nivel 1 de apoyo"],
-            "plan": ["Continuar terapias", "Usar agenda visual con fotos para anticipar cambios"],
+            "relato": [
+              "Se despierta 1 vez por noche",
+              "Dice \"más agua\" y \"mamá ven\"",
+              "Las crisis por cambios duran menos"
+            ],
+            "examen": [
+              "Responde a su nombre",
+              "Mejor contacto visual durante el juego"
+            ],
+            "diagnosticos": [
+              {
+                "descripcion": "TEA, nivel 1 de apoyo",
+                "cie10": "F84.0"
+              }
+            ],
+            "plan": [
+              "Continuar terapias",
+              "Usar agenda visual con fotos para anticipar cambios"
+            ],
             "proximo_control": "En 2 meses",
+            "proximo_control_semanas": 8,
             "por_confirmar": []
           },
           "receta": [
-            {"medicamento": "Melatonina 3 mg", "dosis": "1 tableta", "frecuencia": "Cada noche, 30 minutos antes de dormir", "duracion": "2 meses", "indicaciones": ""}
+            {
+              "medicamento": "Melatonina 3 mg",
+              "forma_farmaceutica": "Tableta",
+              "via": "Oral",
+              "dosis": "1 tableta",
+              "frecuencia": "Cada noche, 30 minutos antes de dormir",
+              "duracion": "2 meses",
+              "indicaciones": ""
+            }
           ]
         },
         {
@@ -62,15 +136,39 @@
           "nota": {
             "resumen": "Buen avance en comunicación y en tolerancia a cambios con la agenda visual. Duerme toda la noche casi todos los días.",
             "motivo": "Control",
-            "relato": ["Arma frases de 2 a 3 palabras", "2 crisis en el mes", "Duerme toda la noche 5 de 7 días"],
-            "examen": ["Juega por turnos con la médica", "Pide ayuda con palabras"],
-            "diagnosticos": ["TEA, nivel 1 de apoyo"],
-            "plan": ["Continuar terapias", "Pedir informe de la terapeuta de lenguaje"],
+            "relato": [
+              "Arma frases de 2 a 3 palabras",
+              "2 crisis en el mes",
+              "Duerme toda la noche 5 de 7 días"
+            ],
+            "examen": [
+              "Juega por turnos con la médica",
+              "Pide ayuda con palabras"
+            ],
+            "diagnosticos": [
+              {
+                "descripcion": "TEA, nivel 1 de apoyo",
+                "cie10": "F84.0"
+              }
+            ],
+            "plan": [
+              "Continuar terapias",
+              "Pedir informe de la terapeuta de lenguaje"
+            ],
             "proximo_control": "En 1 mes",
+            "proximo_control_semanas": 4,
             "por_confirmar": []
           },
           "receta": [
-            {"medicamento": "Melatonina 3 mg", "dosis": "1 tableta", "frecuencia": "Cada noche, 30 minutos antes de dormir", "duracion": "1 mes", "indicaciones": ""}
+            {
+              "medicamento": "Melatonina 3 mg",
+              "forma_farmaceutica": "Tableta",
+              "via": "Oral",
+              "dosis": "1 tableta",
+              "frecuencia": "Cada noche, 30 minutos antes de dormir",
+              "duracion": "1 mes",
+              "indicaciones": ""
+            }
           ]
         }
       ]
@@ -87,11 +185,25 @@
       "historia": {
         "antecedentes_perinatales": "Nacida a término, parto vaginal, sin complicaciones.",
         "desarrollo_psicomotor": "Hitos motores y de lenguaje dentro de lo esperado.",
-        "antecedentes_personales": ["Sin enfermedades crónicas"],
-        "antecedentes_familiares": ["Papá refiere dificultades de atención en su infancia"],
-        "alergias": ["Amoxicilina (ronchas)"],
-        "diagnosticos": ["TDAH, presentación combinada"],
-        "terapias": ["Terapia de aprendizaje", "Psicología: pautas para padres"]
+        "antecedentes_personales": [
+          "Sin enfermedades crónicas"
+        ],
+        "antecedentes_familiares": [
+          "Papá refiere dificultades de atención en su infancia"
+        ],
+        "alergias": [
+          "Amoxicilina (ronchas)"
+        ],
+        "diagnosticos": [
+          {
+            "descripcion": "TDAH, presentación combinada",
+            "cie10": "F90.0"
+          }
+        ],
+        "terapias": [
+          "Terapia de aprendizaje",
+          "Psicología: pautas para padres"
+        ]
       },
       "atenciones": [
         {
@@ -99,15 +211,39 @@
           "nota": {
             "resumen": "Tras tres meses de manejo conductual con mejora parcial, se inicia metilfenidato.",
             "motivo": "Control; el colegio sigue reportando dificultades",
-            "relato": ["La tutora reporta que termina 1 de cada 4 tareas", "En casa necesita recordatorios constantes"],
-            "examen": ["Inquieta, se levanta varias veces", "Peso 25 kg; presión arterial normal"],
-            "diagnosticos": ["TDAH, presentación combinada"],
-            "plan": ["Continuar terapia de aprendizaje y pautas para padres", "Cuadro de rutina con dibujos", "Escala de conducta de la tutora para el próximo control"],
+            "relato": [
+              "La tutora reporta que termina 1 de cada 4 tareas",
+              "En casa necesita recordatorios constantes"
+            ],
+            "examen": [
+              "Inquieta, se levanta varias veces",
+              "Peso 25 kg; presión arterial normal"
+            ],
+            "diagnosticos": [
+              {
+                "descripcion": "TDAH, presentación combinada",
+                "cie10": "F90.0"
+              }
+            ],
+            "plan": [
+              "Continuar terapia de aprendizaje y pautas para padres",
+              "Cuadro de rutina con dibujos",
+              "Escala de conducta de la tutora para el próximo control"
+            ],
             "proximo_control": "En 6 semanas",
+            "proximo_control_semanas": 6,
             "por_confirmar": []
           },
           "receta": [
-            {"medicamento": "Metilfenidato de liberación prolongada 18 mg", "dosis": "1 tableta", "frecuencia": "Cada mañana con el desayuno, solo días de colegio", "duracion": "6 semanas", "indicaciones": "No partir ni masticar la tableta"}
+            {
+              "medicamento": "Metilfenidato de liberación prolongada 18 mg",
+              "forma_farmaceutica": "Tableta",
+              "via": "Oral",
+              "dosis": "1 tableta",
+              "frecuencia": "Cada mañana con el desayuno, solo días de colegio",
+              "duracion": "6 semanas",
+              "indicaciones": "No partir ni masticar la tableta"
+            }
           ]
         },
         {
@@ -115,15 +251,38 @@
           "nota": {
             "resumen": "El colegio reporta una mejora clara. Buena tolerancia a la medicación; el apetito se recuperó.",
             "motivo": "Control",
-            "relato": ["La tutora la ve más atenta y con menos interrupciones", "Termina 3 de cada 4 tareas", "Los fines de semana cuesta seguir la rutina"],
-            "examen": ["Atenta y conversadora", "Peso 25.5 kg"],
-            "diagnosticos": ["TDAH, presentación combinada"],
-            "plan": ["Mantener la rutina también el fin de semana"],
+            "relato": [
+              "La tutora la ve más atenta y con menos interrupciones",
+              "Termina 3 de cada 4 tareas",
+              "Los fines de semana cuesta seguir la rutina"
+            ],
+            "examen": [
+              "Atenta y conversadora",
+              "Peso 25.5 kg"
+            ],
+            "diagnosticos": [
+              {
+                "descripcion": "TDAH, presentación combinada",
+                "cie10": "F90.0"
+              }
+            ],
+            "plan": [
+              "Mantener la rutina también el fin de semana"
+            ],
             "proximo_control": "En 1 mes",
+            "proximo_control_semanas": 4,
             "por_confirmar": []
           },
           "receta": [
-            {"medicamento": "Metilfenidato de liberación prolongada 18 mg", "dosis": "1 tableta", "frecuencia": "Cada mañana con el desayuno, solo días de colegio", "duracion": "1 mes", "indicaciones": "No partir ni masticar la tableta"}
+            {
+              "medicamento": "Metilfenidato de liberación prolongada 18 mg",
+              "forma_farmaceutica": "Tableta",
+              "via": "Oral",
+              "dosis": "1 tableta",
+              "frecuencia": "Cada mañana con el desayuno, solo días de colegio",
+              "duracion": "1 mes",
+              "indicaciones": "No partir ni masticar la tableta"
+            }
           ]
         }
       ]
@@ -140,11 +299,29 @@
       "historia": {
         "antecedentes_perinatales": "Prematuro de 35 semanas, 2.4 kg; 5 días en incubadora.",
         "desarrollo_psicomotor": "Caminó a los 18 meses. No dice palabras; se comunica llevando al adulto de la mano.",
-        "antecedentes_personales": ["Estreñimiento frecuente"],
-        "antecedentes_familiares": ["Sin antecedentes conocidos"],
-        "alergias": ["No conocidas"],
-        "diagnosticos": ["TEA, nivel 2 de apoyo", "Selectividad alimentaria"],
-        "terapias": ["Terapia ocupacional con enfoque sensorial", "Terapia de lenguaje con pictogramas"]
+        "antecedentes_personales": [
+          "Estreñimiento frecuente"
+        ],
+        "antecedentes_familiares": [
+          "Sin antecedentes conocidos"
+        ],
+        "alergias": [
+          "No conocidas"
+        ],
+        "diagnosticos": [
+          {
+            "descripcion": "TEA, nivel 2 de apoyo",
+            "cie10": "F84.0"
+          },
+          {
+            "descripcion": "Selectividad alimentaria",
+            "cie10": "F98.2"
+          }
+        ],
+        "terapias": [
+          "Terapia ocupacional con enfoque sensorial",
+          "Terapia de lenguaje con pictogramas"
+        ]
       },
       "atenciones": [
         {
@@ -152,11 +329,32 @@
           "nota": {
             "resumen": "Crisis frecuentes por ruido y alimentación muy selectiva. Se inician terapias.",
             "motivo": "Control",
-            "relato": ["Crisis casi todos los días con ruidos fuertes", "Solo come papillas y pan"],
-            "examen": ["Se tapa los oídos en la sala de espera", "No responde a su nombre"],
-            "diagnosticos": ["TEA, nivel 2 de apoyo", "Selectividad alimentaria"],
-            "plan": ["Terapia ocupacional sensorial 2 veces por semana", "Terapia de lenguaje con pictogramas", "Orejeras en lugares con ruido", "Evaluación de audición"],
+            "relato": [
+              "Crisis casi todos los días con ruidos fuertes",
+              "Solo come papillas y pan"
+            ],
+            "examen": [
+              "Se tapa los oídos en la sala de espera",
+              "No responde a su nombre"
+            ],
+            "diagnosticos": [
+              {
+                "descripcion": "TEA, nivel 2 de apoyo",
+                "cie10": "F84.0"
+              },
+              {
+                "descripcion": "Selectividad alimentaria",
+                "cie10": "F98.2"
+              }
+            ],
+            "plan": [
+              "Terapia ocupacional sensorial 2 veces por semana",
+              "Terapia de lenguaje con pictogramas",
+              "Orejeras en lugares con ruido",
+              "Evaluación de audición"
+            ],
             "proximo_control": "En 2 meses",
+            "proximo_control_semanas": 8,
             "por_confirmar": []
           },
           "receta": []
@@ -166,11 +364,27 @@
           "nota": {
             "resumen": "Avance en comunicación con pictogramas y en alimentación. Audición normal.",
             "motivo": "Control",
-            "relato": ["Usa 6 pictogramas en casa", "Ya come arroz y plátano", "Una crisis fuerte en un cumpleaños"],
-            "examen": ["Entrega pictogramas para pedir juguetes", "Tolera la sala de espera con orejeras"],
-            "diagnosticos": ["TEA, nivel 2 de apoyo"],
-            "plan": ["Continuar terapias", "Anticipar con fotos las salidas a lugares nuevos"],
+            "relato": [
+              "Usa 6 pictogramas en casa",
+              "Ya come arroz y plátano",
+              "Una crisis fuerte en un cumpleaños"
+            ],
+            "examen": [
+              "Entrega pictogramas para pedir juguetes",
+              "Tolera la sala de espera con orejeras"
+            ],
+            "diagnosticos": [
+              {
+                "descripcion": "TEA, nivel 2 de apoyo",
+                "cie10": "F84.0"
+              }
+            ],
+            "plan": [
+              "Continuar terapias",
+              "Anticipar con fotos las salidas a lugares nuevos"
+            ],
             "proximo_control": "En 2 meses",
+            "proximo_control_semanas": 8,
             "por_confirmar": []
           },
           "receta": []
@@ -189,11 +403,24 @@
       "historia": {
         "antecedentes_perinatales": "Nacida a término, sin complicaciones.",
         "desarrollo_psicomotor": "Desarrollo dentro de lo esperado.",
-        "antecedentes_personales": ["Rinitis alérgica"],
-        "antecedentes_familiares": ["Sin antecedentes conocidos"],
-        "alergias": ["No conocidas"],
-        "diagnosticos": ["TDAH, presentación inatenta"],
-        "terapias": ["Terapia de aprendizaje"]
+        "antecedentes_personales": [
+          "Rinitis alérgica"
+        ],
+        "antecedentes_familiares": [
+          "Sin antecedentes conocidos"
+        ],
+        "alergias": [
+          "No conocidas"
+        ],
+        "diagnosticos": [
+          {
+            "descripcion": "TDAH, presentación inatenta",
+            "cie10": "F98.8"
+          }
+        ],
+        "terapias": [
+          "Terapia de aprendizaje"
+        ]
       },
       "atenciones": [
         {
@@ -201,11 +428,27 @@
           "nota": {
             "resumen": "Mejora con los ajustes en el colegio y la rutina de sueño. Por ahora sin medicación.",
             "motivo": "Control",
-            "relato": ["La tutora la ve más atenta en las primeras horas", "Anota sus tareas cuando se lo recuerdan", "Se duerme a las 9 p. m."],
-            "examen": ["Más participativa en la consulta"],
-            "diagnosticos": ["TDAH, presentación inatenta"],
-            "plan": ["Continuar terapia de aprendizaje", "Revisar la agenda juntas cada noche", "Revaluar medicación en el próximo control"],
+            "relato": [
+              "La tutora la ve más atenta en las primeras horas",
+              "Anota sus tareas cuando se lo recuerdan",
+              "Se duerme a las 9 p. m."
+            ],
+            "examen": [
+              "Más participativa en la consulta"
+            ],
+            "diagnosticos": [
+              {
+                "descripcion": "TDAH, presentación inatenta",
+                "cie10": "F98.8"
+              }
+            ],
+            "plan": [
+              "Continuar terapia de aprendizaje",
+              "Revisar la agenda juntas cada noche",
+              "Revaluar medicación en el próximo control"
+            ],
             "proximo_control": "En 2 meses",
+            "proximo_control_semanas": 8,
             "por_confirmar": []
           },
           "receta": []
@@ -224,11 +467,29 @@
       "historia": {
         "antecedentes_perinatales": "Nacido a término, sin complicaciones.",
         "desarrollo_psicomotor": "Habló a tiempo; juego solitario desde pequeño.",
-        "antecedentes_personales": ["Sin hospitalizaciones"],
-        "antecedentes_familiares": ["Tío paterno con TDAH"],
-        "alergias": ["No conocidas"],
-        "diagnosticos": ["TEA, nivel 1 de apoyo", "TDAH, presentación combinada"],
-        "terapias": ["Psicología: taller de habilidades sociales", "Terapia de aprendizaje"]
+        "antecedentes_personales": [
+          "Sin hospitalizaciones"
+        ],
+        "antecedentes_familiares": [
+          "Tío paterno con TDAH"
+        ],
+        "alergias": [
+          "No conocidas"
+        ],
+        "diagnosticos": [
+          {
+            "descripcion": "TEA, nivel 1 de apoyo",
+            "cie10": "F84.0"
+          },
+          {
+            "descripcion": "TDAH, presentación combinada",
+            "cie10": "F90.0"
+          }
+        ],
+        "terapias": [
+          "Psicología: taller de habilidades sociales",
+          "Terapia de aprendizaje"
+        ]
       },
       "atenciones": [
         {
@@ -236,11 +497,30 @@
           "nota": {
             "resumen": "Primeros avances en el recreo gracias al taller; las tareas siguen siendo difíciles.",
             "motivo": "Control",
-            "relato": ["Juega ajedrez con un compañero en el recreo", "Acepta cambios si se le avisan"],
-            "examen": ["Mejor reciprocidad en la conversación", "Inquieto, mueve las piernas"],
-            "diagnosticos": ["TEA, nivel 1 de apoyo", "TDAH, presentación combinada"],
-            "plan": ["Continuar taller y terapia de aprendizaje", "Temporizador visual para las pausas"],
+            "relato": [
+              "Juega ajedrez con un compañero en el recreo",
+              "Acepta cambios si se le avisan"
+            ],
+            "examen": [
+              "Mejor reciprocidad en la conversación",
+              "Inquieto, mueve las piernas"
+            ],
+            "diagnosticos": [
+              {
+                "descripcion": "TEA, nivel 1 de apoyo",
+                "cie10": "F84.0"
+              },
+              {
+                "descripcion": "TDAH, presentación combinada",
+                "cie10": "F90.0"
+              }
+            ],
+            "plan": [
+              "Continuar taller y terapia de aprendizaje",
+              "Temporizador visual para las pausas"
+            ],
             "proximo_control": "En 2 meses",
+            "proximo_control_semanas": 8,
             "por_confirmar": []
           },
           "receta": []
@@ -250,16 +530,66 @@
           "nota": {
             "resumen": "Mejora en las tareas con temporizador y pausas. Tiene dos amigos en el salón.",
             "motivo": "Control",
-            "relato": ["Termina las tareas con pausas", "Tiene dos amigos en el salón"],
-            "examen": ["Más tranquilo; espera su turno para hablar"],
-            "diagnosticos": ["TEA, nivel 1 de apoyo", "TDAH, presentación combinada"],
-            "plan": ["Continuar taller y terapia de aprendizaje"],
+            "relato": [
+              "Termina las tareas con pausas",
+              "Tiene dos amigos en el salón"
+            ],
+            "examen": [
+              "Más tranquilo; espera su turno para hablar"
+            ],
+            "diagnosticos": [
+              {
+                "descripcion": "TEA, nivel 1 de apoyo",
+                "cie10": "F84.0"
+              },
+              {
+                "descripcion": "TDAH, presentación combinada",
+                "cie10": "F90.0"
+              }
+            ],
+            "plan": [
+              "Continuar taller y terapia de aprendizaje"
+            ],
             "proximo_control": "En 3 meses",
+            "proximo_control_semanas": 12,
             "por_confirmar": []
           },
           "receta": []
         }
       ]
     }
-  ]
+  ],
+  "citas": [
+    {
+      "paciente_id": 1,
+      "en_dias": 0,
+      "hora": "09:00",
+      "tipo": "Control"
+    },
+    {
+      "paciente_id": 2,
+      "en_dias": 0,
+      "hora": "09:40",
+      "tipo": "Control"
+    },
+    {
+      "paciente_id": 3,
+      "en_dias": 0,
+      "hora": "10:20",
+      "tipo": "Control"
+    },
+    {
+      "paciente_id": 4,
+      "en_dias": 0,
+      "hora": "11:00",
+      "tipo": "Control"
+    },
+    {
+      "paciente_id": 5,
+      "en_dias": 1,
+      "hora": "09:00",
+      "tipo": "Control"
+    }
+  ],
+  "_aviso_citas": "Las citas se crean relativas al día en que arranca la app (en_dias = 0 es hoy), para que la agenda del demo nunca esté vacía."
 }

@@ -12,7 +12,8 @@
 - **Usuario:** el neuropediatra (solo el médico usa el sistema). Pacientes: niños con TEA, TDAH y otras condiciones del neurodesarrollo.
 - **Flujo:** el médico abre la ficha del paciente y graba la consulta completa (con autorización de la familia). Al terminar, Whisper transcribe y el LLM devuelve, con salida estructurada validada con Pydantic: (1) el resumen y la nota de la atención, (2) la receta, solo con lo que el médico indicó, y (3) lo nuevo para la historia clínica, que se añade a la existente sin borrar nada. El médico revisa, corrige y guarda.
 - **Ficha del paciente:** datos personales, historia clínica (acumulada, con medicación actual y evolución) y atenciones (historial de todas, con la receta en PDF).
-- **Fuera del MVP:** plan de objetivos, gráfico de evolución, informe para padres.
+- **Agregado tras el benchmark (`docs/benchmark.md`):** agenda del día (Atender → ficha, cita atendida), próximo control agendado desde la atención, diagnósticos con CIE-10 (catálogo de neurodesarrollo en `ai/esquemas.py`), receta según la Ley 29459 (DCI, forma farmacéutica, vía), alertas de psicotrópicos (metilfenidato, lista IIIA) y de alergias (`backend/reglas.py`), "Firmar y guardar" con quién y cuándo, registro de la autorización de la familia, el audio no se guarda, buscador de pacientes.
+- **Fuera del MVP:** plan de objetivos, gráfico de evolución, informe para padres, recordatorios por WhatsApp, reserva en línea, firma digital con certificado, facturación SUNAT, RENHICE.
 - **Límites:** máximo 10 transcripciones por paciente en 7 días; 20 usos de IA por visitante.
 - **API de modelos:** OpenAI. `whisper-1` para transcribir (es Whisper, herramienta del curso) y un modelo de chat con salidas estructuradas (`chat.completions.parse`).
 

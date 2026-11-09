@@ -1,7 +1,7 @@
 """Punto de entrada de Ceni: `streamlit run streamlit_app.py`.
 
 Prepara la clave y la base de datos, dibuja la barra lateral y decide qué
-página mostrar (app/pacientes.py o app/ficha.py).
+página mostrar (agenda, pacientes o ficha).
 """
 
 import os
@@ -41,7 +41,8 @@ with st.sidebar:
 
 pagina = st.navigation(
     [
-        st.Page("app/pacientes.py", title="Pacientes", icon=":material/groups:", default=True),
+        st.Page("app/agenda.py", title="Agenda", icon=":material/calendar_month:", default=True),
+        st.Page("app/pacientes.py", title="Pacientes", icon=":material/groups:"),
         st.Page("app/ficha.py", title="Ficha del paciente", icon=":material/folder_shared:"),
     ]
 )

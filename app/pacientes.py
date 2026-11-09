@@ -4,7 +4,7 @@ from datetime import date
 
 import streamlit as st
 
-from app.formato import fecha_texto
+from app.formato import diagnostico_texto, fecha_texto
 from backend import db
 
 medico = db.medico()
@@ -37,12 +37,16 @@ with st.expander("Registrar paciente nuevo", icon=":material/person_add:"):
                 )
                 st.switch_page("app/ficha.py")
 
-for p in db.listar_pacientes():
+buscar = st.text_input("Buscar paciente", placeholder="Nombre o apellido", icon=":material/search:")
+pacientes = db.listar_pacientes(buscar)
+if not pacientes:
+    st.info("No hay pacientes con ese nombre.")
+for p in pacientes:
     with st.container(border=True):
         datos, clinica, accion = st.columns([3, 5, 1.4], vertical_alignment="center")
         datos.markdown(f"**{p['nombre']}** · {p['edad']}")
         datos.caption(f"Apoderado: {p['apoderado']}")
-        clinica.markdown(" · ".join(p["diagnosticos"]) or "Sin diagnóstico registrado")
+        clinica.markdown(" · ".join(diagnostico_texto(d) for d in p["diagnosticos"]) or "Sin diagnóstico registrado")
         clinica.caption(f"{p['n_atenciones']} atenciones · última: {fecha_texto(p['ultima_atencion'])}")
         if accion.button("Abrir", key=f"abrir_{p['id']}", type="primary"):
             st.session_state["paciente_id"] = p["id"]  # la ficha lee este valor
