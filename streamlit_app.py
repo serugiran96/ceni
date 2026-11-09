@@ -1,0 +1,48 @@
+"""Punto de entrada de Ceni: `streamlit run streamlit_app.py`.
+
+Prepara la clave y la base de datos, dibuja la barra lateral y decide qué
+página mostrar (app/pacientes.py o app/ficha.py).
+"""
+
+import os
+
+import streamlit as st
+
+from backend import db
+
+st.set_page_config(page_title="Ceni", page_icon=":material/graphic_eq:", layout="wide")
+
+# En Streamlit Cloud la clave vive en st.secrets. La copiamos a una variable de
+# entorno para que el código de ai/ funcione igual en la laptop y en la nube.
+try:
+    for nombre in ("OPENAI_API_KEY", "OPENAI_MODEL"):
+        if nombre in st.secrets:
+            os.environ[nombre] = st.secrets[nombre]
+except Exception:  # en la laptop no hay secrets.toml: se usa el .env
+    pass
+
+
+@st.cache_resource  # se ejecuta una sola vez por servidor, no en cada clic
+def iniciar_base() -> bool:
+    db.crear_base()
+    return True
+
+
+iniciar_base()
+
+with st.sidebar:
+    st.markdown("## Ceni")
+    st.caption("La terapeuta dicta la sesión. Ceni arma la nota, la evolución y el informe para la familia.")
+    st.info("Ceni documenta, no diagnostica. Todos los pacientes de este demo son inventados.", icon=":material/info:")
+    if st.button("Restaurar datos del demo", icon=":material/restart_alt:"):
+        db.crear_base(desde_cero=True)
+        st.session_state.clear()
+        st.rerun()
+
+pagina = st.navigation(
+    [
+        st.Page("app/pacientes.py", title="Pacientes", icon=":material/groups:", default=True),
+        st.Page("app/ficha.py", title="Ficha del paciente", icon=":material/folder_shared:"),
+    ]
+)
+pagina.run()
