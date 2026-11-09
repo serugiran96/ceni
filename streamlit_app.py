@@ -32,8 +32,8 @@ iniciar_base()
 
 with st.sidebar:
     st.markdown("## Ceni")
-    st.caption("La terapeuta dicta la sesión. Ceni arma la nota, la evolución y el informe para la familia.")
-    st.info("Ceni documenta, no diagnostica. Todos los pacientes de este demo son inventados.", icon=":material/info:")
+    st.caption("El médico graba la consulta. Ceni arma el resumen, la historia clínica y la receta para que el médico los revise.")
+    st.info("Ceni documenta: no diagnostica ni receta por su cuenta. Todos los pacientes de este demo son inventados.", icon=":material/info:")
     if st.button("Restaurar datos del demo", icon=":material/restart_alt:"):
         db.crear_base(desde_cero=True)
         st.session_state.clear()

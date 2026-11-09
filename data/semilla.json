@@ -1,180 +1,130 @@
 {
-  "_aviso": "Datos 100 % inventados para el demo de Ceni. Ningún paciente, familia ni terapeuta es real.",
+  "_aviso": "Datos 100 % inventados para el demo de Ceni. Ningún paciente, familia ni médico es real. Las recetas son ficticias y no son una recomendación médica.",
+  "medico": {
+    "nombre": "Dra. Lucía Herrera",
+    "especialidad": "Neuropediatría",
+    "colegiatura": "CMP 000000 · RNE 000000 (ficticios)"
+  },
   "pacientes": [
     {
       "id": 1,
       "nombre": "Mateo Quispe Rojas",
       "fecha_nacimiento": "2021-06-14",
+      "sexo": "Masculino",
       "apoderado": "Rosa Rojas (mamá)",
-      "motivo_consulta": "Retraso del lenguaje expresivo: se comunica con palabras sueltas y frases de dos palabras; se frustra cuando no lo entienden.",
-      "especialidad": "Terapia de lenguaje",
-      "terapeuta": "Lic. Andrea Salazar",
-      "sede": "San Miguel",
-      "objetivos": [
-        {"id": 1, "descripcion": "Pedir lo que quiere con frases de 3 a 4 palabras"},
-        {"id": 2, "descripcion": "Seguir instrucciones de dos pasos"},
-        {"id": 3, "descripcion": "Nombrar acciones (verbos) en láminas"}
-      ],
-      "sesiones": [
+      "distrito": "San Miguel",
+      "colegio": "Nido, aula de 5 años",
+      "seguro": "Particular",
+      "historia": {
+        "antecedentes_perinatales": "Nacido a término por cesárea, 3.2 kg, sin complicaciones.",
+        "desarrollo_psicomotor": "Caminó a los 14 meses. Primeras palabras a los 2 años; a los 3 años usaba palabras sueltas.",
+        "antecedentes_personales": ["Sin hospitalizaciones", "Audiometría normal (agosto de 2026)"],
+        "antecedentes_familiares": ["Primo materno con diagnóstico de TEA"],
+        "alergias": ["No conocidas"],
+        "diagnosticos": ["Trastorno del espectro autista (TEA), nivel 1 de apoyo", "Insomnio de mantenimiento"],
+        "terapias": ["Terapia de lenguaje, 2 veces por semana", "Terapia ocupacional, 1 vez por semana"]
+      },
+      "atenciones": [
         {
-          "fecha": "2026-10-06",
+          "fecha": "2026-06-10",
           "nota": {
-            "resumen": "Primera sesión del plan. Mateo llegó tímido y se soltó con el juego de la granja.",
-            "actividades": ["Juego simbólico con la granja", "Láminas de acciones cotidianas"],
-            "logros": ["Imitó 5 sonidos de animales"],
-            "dificultades": ["Señala en lugar de pedir con palabras"],
-            "avances": [
-              {"objetivo_id": 1, "nivel": 1, "comentario": "Pide con una palabra y señalando."},
-              {"objetivo_id": 2, "nivel": 2, "comentario": "Sigue instrucciones de un paso; las de dos necesitan modelo."},
-              {"objetivo_id": 3, "nivel": 1, "comentario": "Nombró 2 de 10 acciones."}
-            ],
-            "tareas_para_casa": ["Esperar 3 segundos antes de darle lo que señala, para que intente decirlo"],
-            "observaciones": "La mamá cuenta que en casa hace berrinches cuando no lo entienden."
-          }
+            "resumen": "Primer control después del diagnóstico. El sueño es la queja principal; se inician terapias y melatonina.",
+            "motivo": "Control después del diagnóstico de TEA",
+            "relato": ["Se despierta 3 veces por noche", "Usa palabras sueltas y señala para pedir", "Crisis largas cuando cambian la ruta al nido"],
+            "examen": ["Contacto visual breve", "Juego repetitivo con carros", "Examen neurológico sin alteraciones"],
+            "diagnosticos": ["TEA, nivel 1 de apoyo", "Insomnio de mantenimiento"],
+            "plan": ["Iniciar terapia de lenguaje 2 veces por semana", "Iniciar terapia ocupacional 1 vez por semana", "Rutina fija para dormir y sin pantallas una hora antes", "Audiometría"],
+            "proximo_control": "En 2 meses",
+            "por_confirmar": []
+          },
+          "receta": [
+            {"medicamento": "Melatonina 3 mg", "dosis": "1 tableta", "frecuencia": "Cada noche, 30 minutos antes de dormir", "duracion": "2 meses", "indicaciones": "Tomar con agua"}
+          ]
         },
         {
-          "fecha": "2026-10-13",
+          "fecha": "2026-08-12",
           "nota": {
-            "resumen": "Sesión con buena disposición. Empezó a combinar dos palabras con más frecuencia.",
-            "actividades": ["Juego de la tiendita", "Canción con gestos"],
-            "logros": ["Dijo \"más agua\" y \"mamá ven\" de forma espontánea"],
-            "dificultades": ["Se cansa después de 20 minutos de trabajo en mesa"],
-            "avances": [
-              {"objetivo_id": 1, "nivel": 2, "comentario": "Frases de 2 palabras con modelo de la terapeuta."},
-              {"objetivo_id": 2, "nivel": 2, "comentario": "3 de 5 instrucciones de dos pasos con ayuda."},
-              {"objetivo_id": 3, "nivel": 1, "comentario": "Nombró 3 de 10 acciones."}
-            ],
-            "tareas_para_casa": ["Jugar a la tiendita en casa con frutas reales"],
-            "observaciones": ""
-          }
+            "resumen": "Mejoría del sueño con melatonina y rutina. Empieza a combinar dos palabras. Audiometría normal.",
+            "motivo": "Control",
+            "relato": ["Se despierta 1 vez por noche", "Dice \"más agua\" y \"mamá ven\"", "Las crisis por cambios duran menos"],
+            "examen": ["Responde a su nombre", "Mejor contacto visual durante el juego"],
+            "diagnosticos": ["TEA, nivel 1 de apoyo"],
+            "plan": ["Continuar terapias", "Usar agenda visual con fotos para anticipar cambios"],
+            "proximo_control": "En 2 meses",
+            "por_confirmar": []
+          },
+          "receta": [
+            {"medicamento": "Melatonina 3 mg", "dosis": "1 tableta", "frecuencia": "Cada noche, 30 minutos antes de dormir", "duracion": "2 meses", "indicaciones": ""}
+          ]
         },
         {
-          "fecha": "2026-10-20",
+          "fecha": "2026-10-07",
           "nota": {
-            "resumen": "Mateo estuvo inquieto al inicio; se reguló con el columpio y luego trabajó bien.",
-            "actividades": ["Columpio antes del trabajo en mesa", "Láminas de acciones", "Cuento corto"],
-            "logros": ["Nombró \"come\", \"duerme\" y \"salta\" sin ayuda"],
-            "dificultades": ["Todavía omite artículos y verbos al pedir"],
-            "avances": [
-              {"objetivo_id": 1, "nivel": 2, "comentario": "Frases de 2 palabras sin modelo, 3 palabras solo con modelo."},
-              {"objetivo_id": 2, "nivel": 3, "comentario": "4 de 5 instrucciones de dos pasos con poca ayuda."},
-              {"objetivo_id": 3, "nivel": 2, "comentario": "Nombró 5 de 10 acciones."}
-            ],
-            "tareas_para_casa": ["Mirar juntos un cuento y preguntarle \"¿qué hace?\" en cada página"],
-            "observaciones": "Se recomienda 5 minutos de movimiento antes de cada sesión."
-          }
-        },
-        {
-          "fecha": "2026-10-27",
-          "nota": {
-            "resumen": "Buena sesión. Empieza a usar \"quiero\" para pedir.",
-            "actividades": ["Juego de construcción con bloques", "Láminas de acciones"],
-            "logros": ["Usó \"quiero\" + objeto en 4 ocasiones"],
-            "dificultades": ["Cuando se frustra vuelve a señalar"],
-            "avances": [
-              {"objetivo_id": 1, "nivel": 2, "comentario": "\"Quiero carro\", \"quiero agua\": 2 palabras con el verbo."},
-              {"objetivo_id": 2, "nivel": 3, "comentario": "Sigue instrucciones de dos pasos en el juego."},
-              {"objetivo_id": 3, "nivel": 3, "comentario": "Nombró 7 de 10 acciones."}
-            ],
-            "tareas_para_casa": ["Darle dos opciones (\"¿quieres pan o galleta?\") para que responda con palabras"],
-            "observaciones": ""
-          }
-        },
-        {
-          "fecha": "2026-11-03",
-          "nota": {
-            "resumen": "Mateo armó sus primeras frases de 3 palabras con apoyo visual.",
-            "actividades": ["Tarjetas con pictogramas para armar frases", "Juego de la tiendita"],
-            "logros": ["Dijo \"quiero más galleta\" con apoyo de pictogramas"],
-            "dificultades": ["Sin las tarjetas vuelve a frases de 2 palabras"],
-            "avances": [
-              {"objetivo_id": 1, "nivel": 3, "comentario": "Frases de 3 palabras con pictogramas."},
-              {"objetivo_id": 2, "nivel": 3, "comentario": "Estable: 4 de 5 con poca ayuda."},
-              {"objetivo_id": 3, "nivel": 3, "comentario": "Nombró 7 de 10 acciones."}
-            ],
-            "tareas_para_casa": ["Usar en casa las tarjetas de \"quiero / más / galleta / agua\" que se llevó"],
-            "observaciones": "La mamá nota menos berrinches en casa."
-          }
+            "resumen": "Buen avance en comunicación y en tolerancia a cambios con la agenda visual. Duerme toda la noche casi todos los días.",
+            "motivo": "Control",
+            "relato": ["Arma frases de 2 a 3 palabras", "2 crisis en el mes", "Duerme toda la noche 5 de 7 días"],
+            "examen": ["Juega por turnos con la médica", "Pide ayuda con palabras"],
+            "diagnosticos": ["TEA, nivel 1 de apoyo"],
+            "plan": ["Continuar terapias", "Pedir informe de la terapeuta de lenguaje"],
+            "proximo_control": "En 1 mes",
+            "por_confirmar": []
+          },
+          "receta": [
+            {"medicamento": "Melatonina 3 mg", "dosis": "1 tableta", "frecuencia": "Cada noche, 30 minutos antes de dormir", "duracion": "1 mes", "indicaciones": ""}
+          ]
         }
       ]
     },
     {
       "id": 2,
       "nombre": "Valentina Huamán Torres",
-      "fecha_nacimiento": "2019-03-02",
+      "fecha_nacimiento": "2018-03-02",
+      "sexo": "Femenino",
       "apoderado": "Jorge Huamán (papá)",
-      "motivo_consulta": "El colegio reporta lectura lenta y silabeante en 2.º grado y dificultad para entender lo que lee.",
-      "especialidad": "Terapia de aprendizaje",
-      "terapeuta": "Lic. Carla Benavides",
-      "sede": "Surco",
-      "objetivos": [
-        {"id": 4, "descripcion": "Leer palabras con sílabas trabadas (bra, pla, tre)"},
-        {"id": 5, "descripcion": "Responder preguntas literales de un texto corto"},
-        {"id": 6, "descripcion": "Mantener la atención en una tarea de 10 minutos"}
-      ],
-      "sesiones": [
+      "distrito": "Santiago de Surco",
+      "colegio": "3.er grado de primaria",
+      "seguro": "EPS",
+      "historia": {
+        "antecedentes_perinatales": "Nacida a término, parto vaginal, sin complicaciones.",
+        "desarrollo_psicomotor": "Hitos motores y de lenguaje dentro de lo esperado.",
+        "antecedentes_personales": ["Sin enfermedades crónicas"],
+        "antecedentes_familiares": ["Papá refiere dificultades de atención en su infancia"],
+        "alergias": ["Amoxicilina (ronchas)"],
+        "diagnosticos": ["TDAH, presentación combinada"],
+        "terapias": ["Terapia de aprendizaje", "Psicología: pautas para padres"]
+      },
+      "atenciones": [
         {
-          "fecha": "2026-10-15",
+          "fecha": "2026-07-08",
           "nota": {
-            "resumen": "Evaluación inicial del plan. Valentina lee sílaba por sílaba y se frustra con las palabras largas.",
-            "actividades": ["Lectura de palabras con sílabas directas y trabadas", "Cuento de media página"],
-            "logros": ["Lee sin error las sílabas directas"],
-            "dificultades": ["Confunde \"bra\" con \"bar\"", "Se distrae a los 4 minutos"],
-            "avances": [
-              {"objetivo_id": 4, "nivel": 1, "comentario": "Leyó 3 de 12 palabras trabadas."},
-              {"objetivo_id": 5, "nivel": 2, "comentario": "Respondió 2 de 5 preguntas con ayuda."},
-              {"objetivo_id": 6, "nivel": 1, "comentario": "Se mantuvo 4 minutos."}
-            ],
-            "tareas_para_casa": ["Leer 5 minutos al día un cuento que ella elija"],
-            "observaciones": "Coordinar con la tutora del colegio para alinear estrategias."
-          }
+            "resumen": "Tras tres meses de manejo conductual con mejora parcial, se inicia metilfenidato.",
+            "motivo": "Control; el colegio sigue reportando dificultades",
+            "relato": ["La tutora reporta que termina 1 de cada 4 tareas", "En casa necesita recordatorios constantes"],
+            "examen": ["Inquieta, se levanta varias veces", "Peso 25 kg; presión arterial normal"],
+            "diagnosticos": ["TDAH, presentación combinada"],
+            "plan": ["Continuar terapia de aprendizaje y pautas para padres", "Cuadro de rutina con dibujos", "Escala de conducta de la tutora para el próximo control"],
+            "proximo_control": "En 6 semanas",
+            "por_confirmar": []
+          },
+          "receta": [
+            {"medicamento": "Metilfenidato de liberación prolongada 18 mg", "dosis": "1 tableta", "frecuencia": "Cada mañana con el desayuno, solo días de colegio", "duracion": "6 semanas", "indicaciones": "No partir ni masticar la tableta"}
+          ]
         },
         {
-          "fecha": "2026-10-22",
+          "fecha": "2026-10-14",
           "nota": {
-            "resumen": "Sesión con mejor ánimo. Funcionó leer con el dedo y con temporizador visual.",
-            "actividades": ["Lectura con el dedo", "Bingo de sílabas trabadas", "Temporizador visual"],
-            "logros": ["Leyó \"bruja\" y \"plato\" sin ayuda"],
-            "dificultades": ["Todavía invierte sílabas en palabras nuevas"],
-            "avances": [
-              {"objetivo_id": 4, "nivel": 2, "comentario": "Leyó 6 de 12 palabras trabadas."},
-              {"objetivo_id": 6, "nivel": 2, "comentario": "7 minutos con el temporizador."}
-            ],
-            "tareas_para_casa": ["Jugar bingo de sílabas en familia (se envió el cartón)"],
-            "observaciones": ""
-          }
-        },
-        {
-          "fecha": "2026-10-29",
-          "nota": {
-            "resumen": "Valentina leyó un texto corto completo y respondió preguntas sobre los personajes.",
-            "actividades": ["Lectura compartida", "Preguntas de quién, qué y dónde"],
-            "logros": ["Respondió 4 de 5 preguntas literales"],
-            "dificultades": ["Las preguntas de \"por qué\" todavía le cuestan"],
-            "avances": [
-              {"objetivo_id": 4, "nivel": 2, "comentario": "Leyó 7 de 12 palabras trabadas."},
-              {"objetivo_id": 5, "nivel": 3, "comentario": "4 de 5 preguntas con poca ayuda."},
-              {"objetivo_id": 6, "nivel": 2, "comentario": "8 minutos."}
-            ],
-            "tareas_para_casa": ["Después de leer, preguntarle quién, qué y dónde"],
-            "observaciones": "El papá comenta que ahora pide leer antes de dormir."
-          }
-        },
-        {
-          "fecha": "2026-11-05",
-          "nota": {
-            "resumen": "Buena sesión. Lectura más fluida en palabras trabadas conocidas.",
-            "actividades": ["Lectura de oraciones", "Juego de memoria con palabras trabadas"],
-            "logros": ["Leyó 9 de 12 palabras trabadas", "Completó 10 minutos de trabajo"],
-            "dificultades": ["Palabras nuevas de 3 sílabas"],
-            "avances": [
-              {"objetivo_id": 4, "nivel": 3, "comentario": "9 de 12 palabras trabadas."},
-              {"objetivo_id": 5, "nivel": 3, "comentario": "Estable en 4 de 5."},
-              {"objetivo_id": 6, "nivel": 3, "comentario": "10 minutos con un recordatorio."}
-            ],
-            "tareas_para_casa": ["Seguir la lectura de 5 minutos diarios"],
-            "observaciones": ""
-          }
+            "resumen": "El colegio reporta una mejora clara. Buena tolerancia a la medicación; el apetito se recuperó.",
+            "motivo": "Control",
+            "relato": ["La tutora la ve más atenta y con menos interrupciones", "Termina 3 de cada 4 tareas", "Los fines de semana cuesta seguir la rutina"],
+            "examen": ["Atenta y conversadora", "Peso 25.5 kg"],
+            "diagnosticos": ["TDAH, presentación combinada"],
+            "plan": ["Mantener la rutina también el fin de semana"],
+            "proximo_control": "En 1 mes",
+            "por_confirmar": []
+          },
+          "receta": [
+            {"medicamento": "Metilfenidato de liberación prolongada 18 mg", "dosis": "1 tableta", "frecuencia": "Cada mañana con el desayuno, solo días de colegio", "duracion": "1 mes", "indicaciones": "No partir ni masticar la tableta"}
+          ]
         }
       ]
     },
@@ -182,223 +132,132 @@
       "id": 3,
       "nombre": "Thiago Mendoza Vargas",
       "fecha_nacimiento": "2022-01-20",
+      "sexo": "Masculino",
       "apoderado": "Lucía Vargas (mamá)",
-      "motivo_consulta": "Rechaza tocar texturas (arena, plastilina, pintura) y le cuesta tomar el crayón; en el nido no participa en las actividades de arte.",
-      "especialidad": "Terapia ocupacional",
-      "terapeuta": "Lic. Paola Ramírez",
-      "sede": "Los Olivos",
-      "objetivos": [
-        {"id": 7, "descripcion": "Tomar el crayón con agarre trípode"},
-        {"id": 8, "descripcion": "Tolerar texturas (plastilina, arena) durante 5 minutos"},
-        {"id": 9, "descripcion": "Abotonar botones grandes"}
-      ],
-      "sesiones": [
+      "distrito": "Los Olivos",
+      "colegio": "Nido, aula de 4 años",
+      "seguro": "Particular",
+      "historia": {
+        "antecedentes_perinatales": "Prematuro de 35 semanas, 2.4 kg; 5 días en incubadora.",
+        "desarrollo_psicomotor": "Caminó a los 18 meses. No dice palabras; se comunica llevando al adulto de la mano.",
+        "antecedentes_personales": ["Estreñimiento frecuente"],
+        "antecedentes_familiares": ["Sin antecedentes conocidos"],
+        "alergias": ["No conocidas"],
+        "diagnosticos": ["TEA, nivel 2 de apoyo", "Selectividad alimentaria"],
+        "terapias": ["Terapia ocupacional con enfoque sensorial", "Terapia de lenguaje con pictogramas"]
+      },
+      "atenciones": [
         {
-          "fecha": "2026-10-09",
+          "fecha": "2026-07-15",
           "nota": {
-            "resumen": "Thiago aceptó entrar a la sala con la mamá. Rechazó la arena y la plastilina.",
-            "actividades": ["Circuito de movimiento", "Caja de arroz con juguetes escondidos"],
-            "logros": ["Tocó el arroz con una mano"],
-            "dificultades": ["Lloró al tocar la plastilina", "Toma el crayón con el puño"],
-            "avances": [
-              {"objetivo_id": 7, "nivel": 1, "comentario": "Agarre de puño."},
-              {"objetivo_id": 8, "nivel": 1, "comentario": "Tolera el arroz menos de un minuto."}
-            ],
-            "tareas_para_casa": ["Jugar a buscar juguetes en una caja de fideos secos"],
-            "observaciones": "Entró con la mamá; la próxima sesión se intentará que entre solo."
-          }
+            "resumen": "Crisis frecuentes por ruido y alimentación muy selectiva. Se inician terapias.",
+            "motivo": "Control",
+            "relato": ["Crisis casi todos los días con ruidos fuertes", "Solo come papillas y pan"],
+            "examen": ["Se tapa los oídos en la sala de espera", "No responde a su nombre"],
+            "diagnosticos": ["TEA, nivel 2 de apoyo", "Selectividad alimentaria"],
+            "plan": ["Terapia ocupacional sensorial 2 veces por semana", "Terapia de lenguaje con pictogramas", "Orejeras en lugares con ruido", "Evaluación de audición"],
+            "proximo_control": "En 2 meses",
+            "por_confirmar": []
+          },
+          "receta": []
         },
         {
-          "fecha": "2026-10-16",
+          "fecha": "2026-10-28",
           "nota": {
-            "resumen": "Entró solo a la sala. Más tolerancia a texturas secas.",
-            "actividades": ["Caja de arroz y fideos", "Crayones cortos para dibujar"],
-            "logros": ["Jugó 3 minutos con arroz", "Usó crayones cortos"],
-            "dificultades": ["Rechaza las texturas húmedas"],
-            "avances": [
-              {"objetivo_id": 7, "nivel": 2, "comentario": "Con crayón corto, agarre más cerca del trípode."},
-              {"objetivo_id": 8, "nivel": 1, "comentario": "3 minutos con textura seca; nada con húmeda."}
-            ],
-            "tareas_para_casa": ["Dibujar con crayones partidos por la mitad"],
-            "observaciones": ""
-          }
-        },
-        {
-          "fecha": "2026-10-23",
-          "nota": {
-            "resumen": "Tocó plastilina por primera vez con un rodillo y luego con los dedos.",
-            "actividades": ["Plastilina con herramientas", "Tablero de botones grandes"],
-            "logros": ["Tocó plastilina 2 minutos", "Abotonó un botón grande con ayuda"],
-            "dificultades": ["Se limpia las manos todo el tiempo"],
-            "avances": [
-              {"objetivo_id": 7, "nivel": 2, "comentario": "Trípode con ayuda en la posición."},
-              {"objetivo_id": 8, "nivel": 2, "comentario": "2 minutos de plastilina."},
-              {"objetivo_id": 9, "nivel": 1, "comentario": "1 botón con mano sobre mano."}
-            ],
-            "tareas_para_casa": ["Hacer galletas con la familia y dejar que toque la masa"],
-            "observaciones": ""
-          }
-        },
-        {
-          "fecha": "2026-10-30",
-          "nota": {
-            "resumen": "Muy buena sesión. Jugó con arena kinética y pidió repetir.",
-            "actividades": ["Arena kinética", "Dibujo libre", "Tablero de botones"],
-            "logros": ["5 minutos con arena kinética", "Dibujó un círculo con agarre trípode"],
-            "dificultades": ["Abotonar todavía le frustra"],
-            "avances": [
-              {"objetivo_id": 7, "nivel": 3, "comentario": "Trípode espontáneo con crayón corto."},
-              {"objetivo_id": 8, "nivel": 3, "comentario": "5 minutos con arena, con pausas."},
-              {"objetivo_id": 9, "nivel": 2, "comentario": "2 botones con ayuda parcial."}
-            ],
-            "tareas_para_casa": ["Practicar el botón de su chompa antes de salir"],
-            "observaciones": "La profesora del nido cuenta que participó en la clase de arte."
-          }
+            "resumen": "Avance en comunicación con pictogramas y en alimentación. Audición normal.",
+            "motivo": "Control",
+            "relato": ["Usa 6 pictogramas en casa", "Ya come arroz y plátano", "Una crisis fuerte en un cumpleaños"],
+            "examen": ["Entrega pictogramas para pedir juguetes", "Tolera la sala de espera con orejeras"],
+            "diagnosticos": ["TEA, nivel 2 de apoyo"],
+            "plan": ["Continuar terapias", "Anticipar con fotos las salidas a lugares nuevos"],
+            "proximo_control": "En 2 meses",
+            "por_confirmar": []
+          },
+          "receta": []
         }
       ]
     },
     {
       "id": 4,
       "nombre": "Camila Flores Ccori",
-      "fecha_nacimiento": "2020-08-09",
+      "fecha_nacimiento": "2019-08-09",
+      "sexo": "Femenino",
       "apoderado": "Maribel Ccori (mamá)",
-      "motivo_consulta": "No pronuncia /r/ ni /rr/ y le cuesta contar en orden lo que hizo en el colegio.",
-      "especialidad": "Terapia de lenguaje",
-      "terapeuta": "Lic. Andrea Salazar",
-      "sede": "San Miguel",
-      "objetivos": [
-        {"id": 10, "descripcion": "Pronunciar /r/ suave en palabras (pera, loro)"},
-        {"id": 11, "descripcion": "Pronunciar /rr/ en palabras (perro, carro)"},
-        {"id": 12, "descripcion": "Contar una historia de 3 escenas en orden"}
-      ],
-      "sesiones": [
+      "distrito": "San Miguel",
+      "colegio": "2.º grado de primaria",
+      "seguro": "Particular",
+      "historia": {
+        "antecedentes_perinatales": "Nacida a término, sin complicaciones.",
+        "desarrollo_psicomotor": "Desarrollo dentro de lo esperado.",
+        "antecedentes_personales": ["Rinitis alérgica"],
+        "antecedentes_familiares": ["Sin antecedentes conocidos"],
+        "alergias": ["No conocidas"],
+        "diagnosticos": ["TDAH, presentación inatenta"],
+        "terapias": ["Terapia de aprendizaje"]
+      },
+      "atenciones": [
         {
-          "fecha": "2026-10-20",
+          "fecha": "2026-10-21",
           "nota": {
-            "resumen": "Inicio del plan. Camila es muy conversadora y colabora con los juegos.",
-            "actividades": ["Praxias con espejo", "Secuencias de 3 láminas"],
-            "logros": ["Ordenó una secuencia de 3 láminas con ayuda"],
-            "dificultades": ["Reemplaza /r/ por /l/ (\"pela\" por \"pera\")"],
-            "avances": [
-              {"objetivo_id": 10, "nivel": 1, "comentario": "/r/ solo en sílabas aisladas con modelo."},
-              {"objetivo_id": 12, "nivel": 2, "comentario": "Ordena 3 escenas con ayuda; las cuenta en desorden."}
-            ],
-            "tareas_para_casa": ["Ejercicios de lengua frente al espejo, 5 minutos diarios"],
-            "observaciones": ""
-          }
-        },
-        {
-          "fecha": "2026-10-27",
-          "nota": {
-            "resumen": "Logró /r/ suave en sílabas y en algunas palabras.",
-            "actividades": ["Praxias", "Lotería de palabras con /r/", "Cuento en secuencia"],
-            "logros": ["Dijo \"pera\" y \"loro\" bien con modelo"],
-            "dificultades": ["En conversación vuelve a /l/"],
-            "avances": [
-              {"objetivo_id": 10, "nivel": 2, "comentario": "Palabras con /r/ suave con modelo."},
-              {"objetivo_id": 11, "nivel": 1, "comentario": "Vibración de /rr/ todavía ausente."},
-              {"objetivo_id": 12, "nivel": 2, "comentario": "Cuenta 3 escenas con preguntas guía."}
-            ],
-            "tareas_para_casa": ["Jugar lotería de palabras (se envió el tablero)"],
-            "observaciones": ""
-          }
-        },
-        {
-          "fecha": "2026-11-03",
-          "nota": {
-            "resumen": "Contó la historia del gato en orden y sin ayuda.",
-            "actividades": ["Secuencias de 3 y 4 láminas", "Praxias de vibración"],
-            "logros": ["Contó 3 escenas en orden de forma espontánea"],
-            "dificultades": ["/rr/ en posición inicial (\"ratón\")"],
-            "avances": [
-              {"objetivo_id": 10, "nivel": 3, "comentario": "/r/ suave en palabras sin modelo en 8 de 10."},
-              {"objetivo_id": 11, "nivel": 1, "comentario": "Vibración breve aislada."},
-              {"objetivo_id": 12, "nivel": 3, "comentario": "3 escenas en orden sin ayuda."}
-            ],
-            "tareas_para_casa": ["Pedirle que cuente en orden qué hizo en el recreo"],
-            "observaciones": ""
-          }
+            "resumen": "Mejora con los ajustes en el colegio y la rutina de sueño. Por ahora sin medicación.",
+            "motivo": "Control",
+            "relato": ["La tutora la ve más atenta en las primeras horas", "Anota sus tareas cuando se lo recuerdan", "Se duerme a las 9 p. m."],
+            "examen": ["Más participativa en la consulta"],
+            "diagnosticos": ["TDAH, presentación inatenta"],
+            "plan": ["Continuar terapia de aprendizaje", "Revisar la agenda juntas cada noche", "Revaluar medicación en el próximo control"],
+            "proximo_control": "En 2 meses",
+            "por_confirmar": []
+          },
+          "receta": []
         }
       ]
     },
     {
       "id": 5,
       "nombre": "Santiago Paredes León",
-      "fecha_nacimiento": "2018-05-27",
+      "fecha_nacimiento": "2017-05-27",
+      "sexo": "Masculino",
       "apoderado": "Ana León (mamá)",
-      "motivo_consulta": "Le cuesta organizarse con las tareas y su escritura es desordenada; su neuróloga recomendó apoyo psicopedagógico.",
-      "especialidad": "Terapia de aprendizaje",
-      "terapeuta": "Lic. Carla Benavides",
-      "sede": "Surco",
-      "objetivos": [
-        {"id": 13, "descripcion": "Escribir oraciones con mayúscula y punto"},
-        {"id": 14, "descripcion": "Usar una agenda para anotar sus tareas"},
-        {"id": 15, "descripcion": "Trabajar 15 minutos en una tarea escrita sin levantarse"}
-      ],
-      "sesiones": [
+      "distrito": "Santiago de Surco",
+      "colegio": "4.º grado de primaria",
+      "seguro": "EPS",
+      "historia": {
+        "antecedentes_perinatales": "Nacido a término, sin complicaciones.",
+        "desarrollo_psicomotor": "Habló a tiempo; juego solitario desde pequeño.",
+        "antecedentes_personales": ["Sin hospitalizaciones"],
+        "antecedentes_familiares": ["Tío paterno con TDAH"],
+        "alergias": ["No conocidas"],
+        "diagnosticos": ["TEA, nivel 1 de apoyo", "TDAH, presentación combinada"],
+        "terapias": ["Psicología: taller de habilidades sociales", "Terapia de aprendizaje"]
+      },
+      "atenciones": [
         {
-          "fecha": "2026-10-14",
+          "fecha": "2026-08-26",
           "nota": {
-            "resumen": "Santiago llegó cansado del colegio. Trabajó mejor con pausas cortas.",
-            "actividades": ["Dictado de 3 oraciones", "Armado de agenda con stickers"],
-            "logros": ["Decoró y aceptó usar su agenda"],
-            "dificultades": ["Olvida la mayúscula al inicio", "Se levantó 4 veces en 10 minutos"],
-            "avances": [
-              {"objetivo_id": 13, "nivel": 1, "comentario": "1 de 3 oraciones con mayúscula y punto."},
-              {"objetivo_id": 14, "nivel": 1, "comentario": "Recién empieza a usar la agenda."},
-              {"objetivo_id": 15, "nivel": 1, "comentario": "5 minutos sin levantarse."}
-            ],
-            "tareas_para_casa": ["Revisar juntos la agenda cada noche (2 minutos)"],
-            "observaciones": "Programar las sesiones antes del almuerzo, si es posible."
-          }
-        },
-        {
-          "fecha": "2026-10-21",
-          "nota": {
-            "resumen": "Mejor atención con el sistema de pausas cada 5 minutos.",
-            "actividades": ["Escritura de oraciones sobre su fin de semana", "Pausas activas"],
-            "logros": ["Anotó 3 tareas del colegio en la agenda"],
-            "dificultades": ["Letra muy grande que no respeta el renglón"],
-            "avances": [
-              {"objetivo_id": 13, "nivel": 2, "comentario": "2 de 3 oraciones con mayúscula."},
-              {"objetivo_id": 14, "nivel": 2, "comentario": "Anota tareas cuando se le recuerda."},
-              {"objetivo_id": 15, "nivel": 2, "comentario": "8 minutos."}
-            ],
-            "tareas_para_casa": ["Usar el semáforo de tiempo (se envió la plantilla)"],
-            "observaciones": ""
-          }
+            "resumen": "Primeros avances en el recreo gracias al taller; las tareas siguen siendo difíciles.",
+            "motivo": "Control",
+            "relato": ["Juega ajedrez con un compañero en el recreo", "Acepta cambios si se le avisan"],
+            "examen": ["Mejor reciprocidad en la conversación", "Inquieto, mueve las piernas"],
+            "diagnosticos": ["TEA, nivel 1 de apoyo", "TDAH, presentación combinada"],
+            "plan": ["Continuar taller y terapia de aprendizaje", "Temporizador visual para las pausas"],
+            "proximo_control": "En 2 meses",
+            "por_confirmar": []
+          },
+          "receta": []
         },
         {
           "fecha": "2026-10-28",
           "nota": {
-            "resumen": "Santiago escribió un párrafo corto sobre su mascota.",
-            "actividades": ["Escritura guiada con lista de chequeo", "Revisión de la agenda"],
-            "logros": ["Revisó sus oraciones con la lista de chequeo"],
-            "dificultades": ["Se apura y omite letras"],
-            "avances": [
-              {"objetivo_id": 13, "nivel": 3, "comentario": "Mayúscula y punto en 4 de 5 oraciones."},
-              {"objetivo_id": 14, "nivel": 2, "comentario": "Estable con recordatorio."},
-              {"objetivo_id": 15, "nivel": 2, "comentario": "10 minutos."}
-            ],
-            "tareas_para_casa": ["Leer en voz alta lo que escribió antes de entregarlo"],
-            "observaciones": ""
-          }
-        },
-        {
-          "fecha": "2026-11-04",
-          "nota": {
-            "resumen": "Sesión muy productiva: completó la tarea escrita en un solo bloque.",
-            "actividades": ["Tarea escrita de 15 minutos", "Planificación de la semana en la agenda"],
-            "logros": ["Trabajó 13 minutos sin levantarse", "Anotó sus tareas sin recordatorio"],
-            "dificultades": ["Necesita recordatorio para revisar al final"],
-            "avances": [
-              {"objetivo_id": 13, "nivel": 3, "comentario": "Estable en 4 de 5 oraciones."},
-              {"objetivo_id": 14, "nivel": 3, "comentario": "Anotó sin recordatorio."},
-              {"objetivo_id": 15, "nivel": 3, "comentario": "13 minutos."}
-            ],
-            "tareas_para_casa": ["Felicitarlo cuando anote solo sus tareas"],
-            "observaciones": "La mamá reporta menos peleas a la hora de hacer tareas."
-          }
+            "resumen": "Mejora en las tareas con temporizador y pausas. Tiene dos amigos en el salón.",
+            "motivo": "Control",
+            "relato": ["Termina las tareas con pausas", "Tiene dos amigos en el salón"],
+            "examen": ["Más tranquilo; espera su turno para hablar"],
+            "diagnosticos": ["TEA, nivel 1 de apoyo", "TDAH, presentación combinada"],
+            "plan": ["Continuar taller y terapia de aprendizaje"],
+            "proximo_control": "En 3 meses",
+            "por_confirmar": []
+          },
+          "receta": []
         }
       ]
     }

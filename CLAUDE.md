@@ -6,9 +6,15 @@
 
 ## 0. Decisiones tomadas (lunes 9 de noviembre de 2026)
 
+> Estas decisiones reemplazan lo que digan las secciones 3 a 6 sobre terapeutas, notas de sesión, objetivos, evolución e informe para padres.
+
 - **Nombre de la startup:** Ceni.
-- **API de modelos:** OpenAI. `whisper-1` para transcribir (es Whisper, herramienta del curso) y un modelo de chat con salidas estructuradas validadas con Pydantic para la nota y el informe.
-- **Plan aprobado:** repo y estructura → datos sintéticos (SQLite) → lista y ficha → IA (Whisper + nota) → nueva sesión de punta a punta → evolución e informe PDF → despliegue en Streamlit Cloud → README (martes).
+- **Usuario:** el neuropediatra (solo el médico usa el sistema). Pacientes: niños con TEA, TDAH y otras condiciones del neurodesarrollo.
+- **Flujo:** el médico abre la ficha del paciente y graba la consulta completa (con autorización de la familia). Al terminar, Whisper transcribe y el LLM devuelve, con salida estructurada validada con Pydantic: (1) el resumen y la nota de la atención, (2) la receta, solo con lo que el médico indicó, y (3) lo nuevo para la historia clínica, que se añade a la existente sin borrar nada. El médico revisa, corrige y guarda.
+- **Ficha del paciente:** datos personales, historia clínica (acumulada, con medicación actual y evolución) y atenciones (historial de todas, con la receta en PDF).
+- **Fuera del MVP:** plan de objetivos, gráfico de evolución, informe para padres.
+- **Límites:** máximo 10 transcripciones por paciente en 7 días; 20 usos de IA por visitante.
+- **API de modelos:** OpenAI. `whisper-1` para transcribir (es Whisper, herramienta del curso) y un modelo de chat con salidas estructuradas (`chat.completions.parse`).
 
 ## 1. Quién soy
 
