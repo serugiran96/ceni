@@ -1,0 +1,14 @@
+# Secretos: nunca se suben
+.env
+.streamlit/secrets.toml
+
+# Entorno y caché de Python
+.venv/
+__pycache__/
+*.pyc
+
+# Base de datos generada al arrancar (se recrea desde data/semilla.json)
+data/ceni.db
+
+# Sistema
+.DS_Store

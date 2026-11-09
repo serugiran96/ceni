@@ -1,0 +1,171 @@
+# Contexto para Claude Code — Proyecto final "Construye tu startup" (Q-Lab PUCP)
+
+> Pega este archivo en la raíz del repo como `CLAUDE.md` (o pásaselo a Claude Code al inicio) y luego usa el **prompt inicial** del final.
+
+---
+
+## 0. Decisiones tomadas (lunes 9 de noviembre de 2026)
+
+- **Nombre de la startup:** Ceni.
+- **API de modelos:** OpenAI. `whisper-1` para transcribir (es Whisper, herramienta del curso) y un modelo de chat con salidas estructuradas validadas con Pydantic para la nota y el informe.
+- **Plan aprobado:** repo y estructura → datos sintéticos (SQLite) → lista y ficha → IA (Whisper + nota) → nueva sesión de punta a punta → evolución e informe PDF → despliegue en Streamlit Cloud → README (martes).
+
+## 1. Quién soy
+
+- **Founder:** Melina Rozas, Digital Product Specialist, con más de 6 años en producto digital (retail, telecom, startups).
+- Estudia la Diplomatura de Ciencia de Datos para las Ciencias Sociales y la Gestión Pública (Q-Lab PUCP).
+- **Por qué soy la founder indicada:** mi hermana está creando un centro de neurología infantil (3 sedes), y yo estoy definiendo sus sistemas (landing y gestor de citas) con el equipo de desarrollo. Conozco el problema de primera mano y sé hacer producto.
+- Programo con apoyo de Claude Code. **Tengo que entender todo el código** (el profesor puede pedirme que explique o cambie una parte). Explícame las decisiones importantes mientras construyes.
+
+## 2. La tarea (resumen del enunciado)
+
+- **Curso:** Diplomatura Q-Lab PUCP. Docente: Alexander Quispe. Individual: una persona, una startup.
+- **Entrega del link:** martes 10 de noviembre de 2026, hasta las 11:59 p. m. (issue #204 del repo del curso).
+- **Presentación:** miércoles 11 de noviembre, **3 minutos con el software funcionando en vivo** (sin diapositivas, o una sola con el one-liner):
+  - 0:00–0:30 problema · 0:30–2:30 demo en vivo de un caso de principio a fin · 2:30–3:00 negocio.
+- **Reglas:**
+  - Problema real y verificable, de preferencia en Perú o Latinoamérica.
+  - **Al menos 2 herramientas del curso dentro del producto** (Claude Code, si solo sirve para programar, no cuenta).
+  - Repo **público** en GitHub con todo el código; el backend tiene que poder revisarse.
+  - Demo: idealmente una URL pública; como mínimo, que corra en la laptop.
+  - **Nada de datos personales reales.** Solo datos sintéticos.
+  - Commits en varios días (no un solo commit gigante). Nunca subir claves ni el `.env`.
+  - Plan B: un video de 60–90 s del software real.
+- **Herramientas del curso disponibles:** scraping y APIs, MCP, Document AI (PaddleOCR), dashboards, mapas (GeoPandas/Folium), raster, LLMs con salidas estructuradas y RAG, Hugging Face / fine-tuning de ModernBERT, agentes con crewAI, despliegue y evaluación, **Whisper (voz a texto)**, **texto a voz**, skills de Claude Code, sitio en GitHub Pages.
+
+### Rúbrica (0–20)
+
+| Criterio | Pts |
+|---|---|
+| Demo funcionando (URL pública + flujo completo en vivo con datos = 7–8; solo en laptop = 4–6) | 8 |
+| Problema y usuario (quién, cuánto le cuesta, cómo lo resuelve hoy, 3 conversaciones) | 3 |
+| Solución e insight (qué veo que otros no, why now) | 2 |
+| Modelo de negocio (quién paga, precio concreto, costo por usuario) | 2 |
+| Herramientas del curso (≥2 dentro del producto, y por qué esas) | 2 |
+| Repositorio (público, README completo, commits en varios días, sin claves) | 2 |
+| Presentación (clara, dentro de 3 min) | 1 |
+
+### El README debe tener estas 9 partes
+
+1. **One-liner** ("Hacemos X para Y mediante Z").
+2. **Founder** (nombre, foto, por qué yo; cómo cubro producto, ingeniería, diseño y ventas con agentes de IA).
+3. **Problema** (quién con precisión, cuánto cuesta en horas/soles/errores, cómo lo resuelven hoy, evidencia: notas de 3 conversaciones en `docs/research/`).
+4. **Solución e insight.**
+5. **Why now.**
+6. **Demo** (URL o cómo correrlo, 3 capturas, diagrama de arquitectura, qué modelos/APIs y por qué).
+7. **Modelo de negocio** (máximo 3 planes con precio, costo por usuario en tokens/servidor/APIs = margen de contribución).
+8. **Herramientas del curso** (cuáles y en qué archivo del repo).
+9. **Qué hizo el agente** (qué partes generó Claude Code).
+
+Opcional: TAM/SAM/SOM, competencia (incluye "no hacer nada" y "Excel/Word"), primeros 10/100/1,000 usuarios, plan a 3/6/12 meses, riesgos.
+
+### Estructura sugerida del repo
+
+```
+mi-startup/
+  README.md
+  LICENSE            # MIT
+  .env.example       # solo nombres de variables
+  .gitignore         # incluye .env
+  app/               # Streamlit
+  backend/           # si hace falta
+  ai/                # prompts, esquemas, scripts de IA
+  data/              # datos sintéticos
+  docs/              # capturas, diagrama, research/ (3 conversaciones)
+  notebooks/
+```
+
+## 3. La idea elegida
+
+**One-liner tentativo:**
+*"Hacemos el sistema de pacientes de los centros de terapia infantil, donde las terapeutas dictan la sesión y la IA arma la nota, la evolución y el informe para los padres."*
+
+**Nombre de la startup:** por definir (propónme 5 opciones cortas). El centro de mi hermana sería el primer cliente; la startup es otra marca.
+
+**Problema:** las terapeutas de lenguaje, ocupacional y de aprendizaje de los centros de neurología y terapia infantil atienden muchos niños al día. Después de cada sesión escriben la nota de evolución, y cada cierto tiempo un informe para los padres o el colegio. Hoy lo hacen en Word, Excel o un cuaderno, muchas veces fuera de horario. Los padres reciben informes técnicos que no entienden, y la información del niño queda dispersa.
+
+**Por qué es startup (y no un proyecto):** muchos centros tienen el mismo problema; el software hace el trabajo (el costo por cliente nuevo es casi cero); suscripción mensual repetida; puede crecer de Lima al Perú y a Latinoamérica. La estrategia: entrar con una función que ahorra tiempo (dictar la nota) y quedarse como el sistema de pacientes del centro.
+
+**Primer cliente:** el centro de mi hermana (3 sedes).
+
+**Herramientas del curso dentro del producto:**
+1. **Whisper** (voz a texto): transcribir el dictado de la sesión.
+2. **LLM con salidas estructuradas** (JSON validado con Pydantic): convertir la transcripción en nota clínica estructurada y en informe para padres.
+3. (Opcional) **Texto a voz:** versión en audio del informe para los padres.
+4. (Opcional) **Dashboard:** evolución del paciente.
+
+**Modelo de negocio (borrador, a afinar):** suscripción por profesional al mes (por ejemplo, S/ 39), con hasta 3 planes (por ejemplo: Terapeuta independiente / Centro / Multisede). Calcular el costo por usuario: minutos de audio transcritos + tokens del LLM + servidor.
+
+**Límites importantes:**
+- La app **documenta, no diagnostica**. Decirlo en la app y en el README.
+- Datos de salud de menores → **solo pacientes inventados** en el demo y en el repo.
+
+## 4. Alcance del MVP (lo único que tiene que funcionar el miércoles)
+
+**Construir:**
+1. **Lista de pacientes:** nombre (inventado), edad, motivo de consulta, especialidad, terapeuta asignada. Con 4–6 pacientes sintéticos precargados, cada uno con algunas sesiones previas para que la evolución se vea.
+2. **Ficha del paciente:** datos básicos + historial de sesiones.
+3. **Nueva sesión por voz:** grabar desde el navegador (`st.audio_input`) o subir un archivo → transcripción con Whisper → el LLM devuelve una nota estructurada (fecha, especialidad, objetivos trabajados, actividades, logros, dificultades, avance por objetivo en escala simple, tareas para casa, observaciones) → la terapeuta puede editarla → se guarda en la ficha.
+4. **Evolución:** gráfico de avance por objetivo a lo largo de las sesiones.
+5. **Informe para padres:** un botón que genera un resumen cálido y en lenguaje simple de las últimas sesiones, descargable en PDF (y opcionalmente en audio con texto a voz).
+
+**No construir ahora (va en "qué sigue" del pitch):** agenda y citas, pagos y adelantos (Yape/Plin), portal para padres, multisede, roles y login, integración con el gestor de citas del centro.
+
+**Flujo del demo (2 minutos):** abro la lista → entro a la ficha de un niño y veo su historial → dicto la sesión de hoy → aparece la nota estructurada y la guardo → veo la evolución → genero el informe para la mamá.
+
+## 5. Stack técnico propuesto
+
+- **App:** Streamlit (multipágina o pestañas).
+- **Persistencia:** SQLite (o JSON) con datos sintéticos en `data/`. En Streamlit Cloud el disco no es persistente: está bien para el demo, pero los datos semilla se recargan en cada arranque.
+- **IA:** por definir según la API que tenga. Recomendación: OpenAI para la transcripción (Whisper) y el LLM, con salida estructurada validada con Pydantic. Alternativa: Anthropic para el LLM + Whisper aparte (API, o `faster-whisper` local si quiero que corra sin internet, con el argumento de confidencialidad).
+- **PDF:** `fpdf2` o `reportlab`.
+- **Gráficos:** Plotly o Altair.
+- **Despliegue:** Streamlit Community Cloud, con la clave en `st.secrets`, nunca en el código. Poner tope de gasto en la API.
+- Incluir 2–3 audios de ejemplo (grabados por mí, con casos inventados) en `data/audios_demo/` como respaldo por si falla el micrófono en vivo.
+
+## 6. Evidencia: las 3 conversaciones
+
+Tengo que hablar hoy con 3 usuarios potenciales (mi hermana y dos terapeutas). Guardar las notas en `docs/research/entrevista-1.md`, `-2.md` y `-3.md`. Preguntas guía:
+
+1. ¿Cuántos niños atiendes al día o a la semana?
+2. ¿Qué escribes después de cada sesión y dónde (Word, Excel, cuaderno, sistema)?
+3. ¿Cuánto tiempo te toma por sesión? ¿Y los informes para padres o colegio?
+4. ¿Lo haces dentro o fuera de tu horario?
+5. ¿Qué es lo más molesto de ese proceso?
+6. ¿Qué te piden los padres que hoy cuesta darles?
+7. Si una app te armara la nota a partir de un audio de 1 minuto, ¿la usarías? ¿Qué te preocuparía?
+8. ¿Cuánto pagaría el centro (o tú) al mes por algo así?
+
+Mensaje de WhatsApp sugerido:
+> "Hola, ¿cómo estás? Estoy haciendo un proyecto para mi diplomatura en la PUCP sobre cómo las terapeutas infantiles registran sus sesiones e informes. ¿Me regalas 10 minutos hoy, por llamada o por audio, para hacerte unas preguntas? Me ayudarías un montón 🙏"
+
+## 7. Cronograma restante
+
+- **Lunes 9 (hoy):** 3 entrevistas · crear el repo público · construir el flujo principal · primeros commits · desplegar en Streamlit Cloud.
+- **Martes 10:** que 2 personas lo prueben y arreglar lo que falle · README con las 9 partes · 3 capturas y diagrama · video de respaldo de 60–90 s · ensayo con cronómetro · entregar el link antes de las 11:59 p. m.
+- **Miércoles 11:** presentación de 3 minutos.
+
+---
+
+## Prompt inicial para Claude Code
+
+```
+Lee CLAUDE.md completo: es el contexto de mi proyecto final y mis decisiones.
+
+Quiero construir el MVP descrito en la sección 4, con el stack de la sección 5,
+dentro de la estructura de repo de la sección 2. Antes de escribir código:
+
+1. Pregúntame qué API de modelos voy a usar (OpenAI, Anthropic u otra) y
+   ajusta el stack a eso.
+2. Propónme 5 nombres cortos para la startup.
+3. Muéstrame un plan breve por pasos (máximo 8) y espera mi OK.
+
+Luego construye paso a paso, haciendo un commit con mensaje claro al final de
+cada paso, y explicándome en 2–3 líneas qué hace cada archivo importante para
+que pueda defender el código. Prioriza que el flujo del demo funcione de
+principio a fin antes de pulir el diseño. Usa solo datos sintéticos. Nunca
+pongas claves en el código: usa .env local y st.secrets en el despliegue.
+
+Cuando el flujo funcione, ayúdame a desplegarlo en Streamlit Community Cloud
+y después a escribir el README con las 9 partes de la sección 2.
+```
