@@ -7,18 +7,24 @@ con el historial, la nueva sesión por voz, la evolución y el informe.
 from datetime import date
 from pathlib import Path
 
+import pandas as pd
+import plotly.graph_objects as go
 import streamlit as st
+from plotly.subplots import make_subplots
 
 from ai.cliente import hay_clave
 from ai.esquemas import ESCALA, AvanceObjetivo, NotaSesion
-from ai.generar import generar_nota
+from ai.generar import generar_informe, generar_nota
 from ai.transcribir import transcribir
-from app.formato import fecha_texto, mostrar_nota, nivel_texto
+from app.formato import MESES, fecha_texto, mostrar_nota, nivel_texto
 from backend import db
+from backend.pdf import informe_a_pdf
 
 PESTANAS = ["Historial", "Nueva sesión", "Evolución", "Informe para la familia"]
 CARPETA_EJEMPLOS = Path(__file__).resolve().parent.parent / "data" / "audios_demo"
 MAX_USOS_IA = 20  # por visitante: protege el saldo de la API en la URL pública
+N_SESIONES_INFORME = 4  # el informe resume más o menos el último mes
+COLORES = ["#2a78d6", "#eb6834", "#1baf7a"]  # azul, naranja, aqua: distinguibles con daltonismo
 
 
 def usar_ia() -> bool:
@@ -34,6 +40,52 @@ def usar_ia() -> bool:
 def lineas(texto: str) -> list[str]:
     """Convierte un cuadro de texto (un ítem por línea) en lista."""
     return [l.strip(" -•\t") for l in texto.splitlines() if l.strip(" -•\t")]
+
+
+def grafico_evolucion(avances, objetivos: list[dict]) -> go.Figure:
+    """Un panel por objetivo (así las líneas no se tapan), mismo eje de fechas."""
+    fig = make_subplots(
+        rows=len(objetivos), cols=1, shared_xaxes=True, vertical_spacing=0.12,
+        subplot_titles=[o["descripcion"] for o in objetivos],
+    )
+    for fila, (o, color) in enumerate(zip(objetivos, COLORES), start=1):
+        datos = avances[avances["objetivo"] == o["descripcion"]]
+        fig.add_trace(
+            go.Scatter(
+                x=datos["fecha"], y=datos["nivel"], mode="lines+markers", name=o["descripcion"],
+                line={"color": color, "width": 2}, marker={"size": 9, "color": color},
+                customdata=datos["nivel"].map(nivel_texto),
+                hovertemplate="%{x|%d/%m/%Y}<br><b>%{customdata}</b> (%{y}/4)<extra></extra>",
+            ),
+            row=fila, col=1,
+        )
+        fig.update_yaxes(
+            row=fila, col=1, range=[0.6, 4.4], tickvals=[1, 2, 3, 4],
+            ticktext=[nivel_texto(n) for n in (1, 2, 3, 4)], gridcolor="rgba(128,128,128,0.15)",
+        )
+    fechas = sorted(avances["fecha"].unique())  # una marca por sesión, con el mes en español
+    fig.update_xaxes(
+        tickvals=fechas, ticktext=[f"{f.day} {MESES[f.month - 1][:3]}" for f in pd.to_datetime(fechas)],
+        gridcolor="rgba(128,128,128,0.15)",
+    )
+    fig.update_layout(
+        height=190 * len(objetivos) + 40, showlegend=False, hovermode="closest",
+        margin={"l": 10, "r": 10, "t": 40, "b": 10},
+    )
+    fig.update_annotations(font_size=14, xanchor="left", x=0)  # títulos de panel a la izquierda
+    return fig
+
+
+def progreso_objetivos(sesiones_orden: list[dict], objetivos: list[dict]) -> list[str]:
+    """'Objetivo: En proceso -> Casi logrado' entre la primera y la última sesión del periodo."""
+    resultado = []
+    for o in objetivos:
+        niveles = [a.nivel for s in sesiones_orden for a in s["nota"].avances if a.objetivo_id == o["id"]]
+        if not niveles:
+            continue
+        cambio = nivel_texto(niveles[-1]) if niveles[0] == niveles[-1] else f"{nivel_texto(niveles[0])} → {nivel_texto(niveles[-1])}"
+        resultado.append(f"{o['descripcion']}: {cambio}")
+    return resultado
 
 # --- Elegir paciente ---------------------------------------------------------
 pacientes = db.listar_pacientes()
@@ -193,8 +245,57 @@ with nueva:
             st.session_state["ir_a_pestana"] = "Evolución"
             st.rerun()
 
+# --- Evolución: un panel por objetivo -----------------------------------------
 with evolucion:
-    st.info("Próximo paso: gráfico de evolución.")
+    avances = db.avances_de(paciente_id)
+    if avances.empty:
+        st.info("Todavía no hay avances registrados.")
+    else:
+        st.plotly_chart(grafico_evolucion(avances, objetivos), width="stretch", config={"displayModeBar": False})
+        with st.expander("Ver los datos en tabla"):
+            tabla = avances.assign(fecha=avances["fecha"].dt.strftime("%d/%m/%Y"), nivel=avances["nivel"].map(nivel_texto))
+            st.dataframe(tabla, hide_index=True, width="stretch")
 
+# --- Informe para la familia ---------------------------------------------------
 with informe:
-    st.info("Próximo paso: informe para la familia.")
+    ultimas = sesiones[:N_SESIONES_INFORME][::-1]  # las más recientes, en orden de fecha
+    if not ultimas:
+        st.info("Hace falta al menos una sesión para armar el informe.")
+    else:
+        periodo = f"del {fecha_texto(ultimas[0]['fecha'])} al {fecha_texto(ultimas[-1]['fecha'])}"
+        st.markdown(
+            f"Resumen en lenguaje simple de las últimas {len(ultimas)} sesiones ({periodo}), "
+            f"para {paciente['apoderado']}."
+        )
+        if st.button("Generar informe", type="primary", icon=":material/description:", key=f"informe_{paciente_id}"):
+            if usar_ia():
+                try:
+                    with st.spinner("Escribiendo el informe…"):
+                        st.session_state["informe"] = {
+                            "paciente_id": paciente_id,
+                            "periodo": periodo,
+                            "contenido": generar_informe(paciente, objetivos, ultimas),
+                        }
+                except Exception as error:
+                    st.error(f"No se pudo generar el informe: {error}")
+
+        guardado = st.session_state.get("informe")
+        if guardado and guardado["paciente_id"] == paciente_id:
+            inf = guardado["contenido"]
+            progreso = progreso_objetivos(ultimas, objetivos)
+            with st.container(border=True):
+                st.markdown(inf.saludo)
+                st.markdown(inf.como_va)
+                st.markdown("**Lo que logró**\n" + "\n".join(f"- {x}" for x in inf.logros))
+                st.markdown("**En qué seguimos trabajando**\n" + "\n".join(f"- {x}" for x in inf.seguimos_trabajando))
+                st.markdown("**Cómo va cada objetivo**\n" + "\n".join(f"- {x}" for x in progreso))
+                st.markdown("**Ideas para casa**\n" + "\n".join(f"- {x}" for x in inf.en_casa))
+                st.markdown(inf.cierre)
+            st.download_button(
+                "Descargar PDF",
+                data=informe_a_pdf(inf, paciente, guardado["periodo"], progreso),
+                file_name=f"informe-{paciente['nombre'].split()[0].lower()}-{date.today().isoformat()}.pdf",
+                mime="application/pdf",
+                icon=":material/download:",
+                on_click="ignore",
+            )
