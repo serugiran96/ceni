@@ -1,50 +1,55 @@
-# Tema visual de Ceni: los colores del logo (azul pizarra, celeste y salvia)
-# más pasteles (durazno, lavanda, mantequilla y rosa) para las etiquetas.
-# Tipografía: Outfit en los títulos (parecida a la del logo) y Figtree en el texto.
+# Tema visual de Ceni: violeta eléctrico como color principal, con coral, menta,
+# sol, cielo y rosa para darle vida (etiquetas, avatares y tarjetas).
+# Tipografía: Bricolage Grotesque en los títulos y Plus Jakarta Sans en el texto.
+# Lo que el tema no cubre (degradados, tarjetas, avatares) está en app/estilo.py.
 
 [theme]
 base = "light"
-primaryColor = "#4F7487"
-backgroundColor = "#F6F9FA"
-secondaryBackgroundColor = "#EDF3F6"
-textColor = "#263B47"
-linkColor = "#4F7487"
-borderColor = "#DCE6EC"
+primaryColor = "#5B47FB"
+backgroundColor = "#F7F6FF"
+secondaryBackgroundColor = "#EFEDFF"
+textColor = "#1D1A3A"
+linkColor = "#5B47FB"
+borderColor = "#E3E0F8"
 showWidgetBorder = true
-baseRadius = "0.75rem"
+baseRadius = "0.85rem"
 buttonRadius = "full"
-font = "Figtree:https://fonts.googleapis.com/css2?family=Figtree:wght@400;500;600;700&display=swap"
-headingFont = "Outfit:https://fonts.googleapis.com/css2?family=Outfit:wght@500;600;700&display=swap"
-headingFontWeights = [700, 600, 600, 600, 600, 600]
-headingFontSizes = ["2.1rem", "1.6rem", "1.3rem", "1.1rem", "1rem", "0.9rem"]
+font = "Plus Jakarta Sans:https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap"
+headingFont = "Bricolage Grotesque:https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@500;600;700;800&display=swap"
+headingFontWeights = [800, 700, 700, 700, 600, 600]
+headingFontSizes = ["2.3rem", "1.7rem", "1.35rem", "1.12rem", "1rem", "0.9rem"]
 
-# Colores de las etiquetas, avisos y badges (fondo pastel + texto oscuro del mismo tono).
-blueColor = "#4F7487"
-blueBackgroundColor = "#DCE8F0"
-blueTextColor = "#2F5568"
-greenColor = "#5E9A68"
-greenBackgroundColor = "#DDEEDF"
-greenTextColor = "#2F6138"
-orangeColor = "#D08A5B"
-orangeBackgroundColor = "#FBE3D3"
-orangeTextColor = "#8A4A22"
-violetColor = "#8574B8"
-violetBackgroundColor = "#E6E0F4"
-violetTextColor = "#54448A"
-yellowColor = "#C9A43A"
-yellowBackgroundColor = "#FAF0CF"
-yellowTextColor = "#6E520A"
-redColor = "#C9617F"
-redBackgroundColor = "#F8DDE4"
-redTextColor = "#8C3150"
-grayColor = "#8A9AA3"
-grayBackgroundColor = "#E9EEF1"
-grayTextColor = "#4F606A"
+# Colores de avisos, badges y etiquetas (color, fondo claro y texto oscuro del mismo tono).
+blueColor = "#339AF0"
+blueBackgroundColor = "#E0F0FF"
+blueTextColor = "#1864AB"
+greenColor = "#12B886"
+greenBackgroundColor = "#DCF7EC"
+greenTextColor = "#087F5B"
+orangeColor = "#FF7A59"
+orangeBackgroundColor = "#FFE8E1"
+orangeTextColor = "#B33A1C"
+violetColor = "#7C5CFF"
+violetBackgroundColor = "#EEEBFF"
+violetTextColor = "#4331D6"
+yellowColor = "#FFB020"
+yellowBackgroundColor = "#FFF3D6"
+yellowTextColor = "#8F5B00"
+redColor = "#F03E6E"
+redBackgroundColor = "#FFE3EB"
+redTextColor = "#B4234D"
+grayColor = "#8A88A8"
+grayBackgroundColor = "#EEEEF6"
+grayTextColor = "#55536E"
 
+# Barra lateral oscura (el degradado se aplica en app/estilo.py).
 [theme.sidebar]
-backgroundColor = "#E8F0F5"
-secondaryBackgroundColor = "#FFFFFF"
-borderColor = "#D3E0E8"
+backgroundColor = "#24166B"
+secondaryBackgroundColor = "#33248A"
+textColor = "#F3F1FF"
+primaryColor = "#FFB020"
+borderColor = "#3B2C93"
+linkColor = "#FFD27A"
 
 [client]
 toolbarMode = "minimal"

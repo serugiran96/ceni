@@ -1,18 +1,23 @@
 """Página: ficha del paciente.
 
 Arriba, quién es el paciente. Debajo, cuatro pestañas:
-- Nueva atención: el médico graba la consulta y, al terminar, la IA arma la
-  nota (en el orden del formato de consulta externa del MINSA), la receta y lo
-  nuevo de la historia clínica. El médico lo revisa, lo corrige y lo firma.
+- Nueva atención: el médico ve un resumen de la última consulta ("Antes de
+  empezar") y graba la consulta. Al terminar, la IA arma la nota (en el orden
+  del formato de consulta externa del MINSA), la receta y lo nuevo de la
+  historia clínica. El médico lo revisa, lo corrige y lo firma.
 - Historia clínica: la historia acumulada, la medicación actual y la evolución.
 - Atenciones: todas las consultas, con su receta en PDF.
 - Datos personales.
+
+Ceni mide dos tiempos reales para mostrárselos al médico al firmar: cuánto
+tardó la IA en armar el borrador y cuánto tardó el médico en revisarlo y firmarlo.
 """
 
 import json
 from datetime import date, datetime, time, timedelta
 from html import escape
 from pathlib import Path
+from time import monotonic
 
 import pandas as pd
 import streamlit as st
@@ -23,8 +28,9 @@ from ai.esquemas import (CIE10, HISTORIA_VACIA, TIPOS_DIAGNOSTICO, Diagnostico, 
 from ai.generar import procesar_atencion
 from ai.transcribir import transcribir
 from app import estilo
-from app.formato import (TITULOS_FUNCIONES, TITULOS_HISTORIA, chips_paciente, cuando_texto, dia_texto, fecha_texto,
-                         historia_html, momento_texto, mostrar_atencion, receta_html, signos_html)
+from app.formato import (TITULOS_FUNCIONES, TITULOS_HISTORIA, antes_de_empezar_html, chips_paciente, cuando_texto,
+                         dia_texto, duracion_texto, fecha_texto, historia_html, momento_texto, mostrar_atencion,
+                         receta_html, signos_html)
 from backend import db
 from backend.pdf import receta_a_pdf
 from backend.reglas import alertas_receta
@@ -69,6 +75,18 @@ def puede_procesar(paciente_id: int) -> bool:
     return True
 
 
+def ir_a_paciente(paciente_id: int, cita_id: int | None) -> None:
+    """Callback del botón "Siguiente paciente".
+
+    Va en un callback porque el selector de paciente (key="paciente_id") ya está
+    dibujado: su valor solo se puede cambiar antes de que la página se vuelva a dibujar.
+    """
+    st.session_state["paciente_id"] = paciente_id
+    st.session_state["cita_id"] = cita_id
+    st.session_state["ir_a_pestana"] = NUEVA
+    st.session_state.pop("recien_firmada", None)
+
+
 # --- Quién es el paciente ------------------------------------------------------
 pacientes = db.listar_pacientes()
 nombres = {p["id"]: p["nombre"] for p in pacientes}
@@ -82,6 +100,13 @@ atenciones = db.atenciones_de(paciente_id)  # de la más reciente a la más anti
 medico = db.medico()
 proxima = db.proxima_cita_de(paciente_id)
 
+
+def receta_pdf(a: dict) -> bytes:
+    """La receta de una atención, en PDF."""
+    return receta_a_pdf(a["receta"], paciente, medico, fecha_texto(a["fecha"]), a["nota"].diagnosticos,
+                        a["nota"].indicaciones, a["firmado_en"], a["nota"].signos_vitales.peso_kg)
+
+
 # Si venimos de "Atender" en la agenda, la atención queda enlazada a esa cita.
 cita = db.obtener_cita(st.session_state["cita_id"]) if st.session_state.get("cita_id") else None
 if not cita or cita["paciente_id"] != paciente_id or cita["estado"] != "Programada":
@@ -90,19 +115,46 @@ borrador = st.session_state.get("borrador")
 if borrador and borrador["paciente_id"] != paciente_id:
     borrador = None
 
-with st.container(key="tarjeta-encabezado"):
+with st.container(key="heroe-paciente"):
     quien, cambiar = st.columns([3, 1.1], vertical_alignment="center")
-    etiquetas = chips_paciente(historia.diagnosticos, historia.alergias)
+    etiquetas = chips_paciente(historia.diagnosticos, historia.alergias, sobre_color=True)
     if proxima:
         etiquetas += estilo.chips([estilo.chip(
-            f"Próxima cita: {cuando_texto(proxima['fecha'])}, {proxima['hora']}", "cielo")])
+            f"Próxima cita: {cuando_texto(proxima['fecha'])}, {proxima['hora']}", "vidrio")])
     quien.html(estilo.persona(
         paciente["nombre"], paciente_id,
         f"{paciente['edad']} · {paciente['sexo']} · {paciente['hc']} · {paciente['seguro']} · "
         f"Apoderado: {paciente['apoderado']}",
-        f'<div style="margin-top:.4rem">{etiquetas}</div>', grande=True,
+        f'<div style="margin-top:.45rem">{etiquetas}</div>', grande=True,
     ))
     cambiar.selectbox("Cambiar de paciente", list(nombres), format_func=nombres.get, key="paciente_id")
+
+# --- Recién firmada: los tiempos, la receta y el siguiente paciente -----------------
+firmada = st.session_state.get("recien_firmada")
+if firmada and firmada["paciente_id"] == paciente_id:
+    atencion_firmada = next((a for a in atenciones if a["id"] == firmada["atencion_id"]), None)
+    siguiente = next((c for c in db.citas_entre(date.today(), date.today())
+                      if c["estado"] == "Programada" and c["paciente_id"] != paciente_id), None)
+    with st.container(key="listo-firmada"):
+        estilo.html(
+            estilo.titulo("Atención firmada y guardada", "task_alt", "vidrio")
+            + f'<p class="ceni-texto">Ceni armó el borrador en <b>{duracion_texto(firmada["segundos_ia"])}</b> '
+            f'y tú lo revisaste y firmaste en <b>{duracion_texto(firmada["segundos_revision"])}</b>. '
+            f'{escape(firmada["detalle"])}</p>'
+        )
+        with st.container(horizontal=True):
+            if atencion_firmada and atencion_firmada["receta"]:
+                st.download_button(
+                    "Receta en PDF", receta_pdf(atencion_firmada), file_name=f"receta-{paciente['hc']}.pdf",
+                    mime="application/pdf", icon=":material/picture_as_pdf:", type="primary", on_click="ignore",
+                    key="pdf_firmada",
+                )
+            if siguiente:
+                st.button(f"Siguiente: {siguiente['nombre']} · {siguiente['hora']}", icon=":material/arrow_forward:",
+                          on_click=ir_a_paciente, args=(siguiente["paciente_id"], siguiente["id"]))
+            if st.button("Volver a la agenda", icon=":material/calendar_month:"):
+                st.session_state.pop("recien_firmada", None)
+                st.switch_page("app/agenda.py")
 
 if aviso := st.session_state.pop("aviso", None):
     st.success(aviso, icon=":material/check_circle:")
@@ -110,19 +162,25 @@ for alerta in st.session_state.pop("alertas_guardadas", []):
     st.warning(alerta, icon=":material/medication:")
 
 # Al venir de la agenda o después de firmar, abrimos una pestaña en particular.
+# on_change="rerun" hace que las pestañas guarden su estado en st.session_state["pestana"];
+# sin eso, Streamlit ignora el valor que le ponemos aquí.
 if "ir_a_pestana" in st.session_state:
     st.session_state["pestana"] = st.session_state.pop("ir_a_pestana")
-nueva_tab, historia_tab, atenciones_tab, datos_tab = st.tabs([NUEVA, HISTORIA, ATENCIONES, DATOS], key="pestana")
+nueva_tab, historia_tab, atenciones_tab, datos_tab = st.tabs(
+    [NUEVA, HISTORIA, ATENCIONES, DATOS], key="pestana", on_change="rerun")
 
 # --- Nueva atención ------------------------------------------------------------
 with nueva_tab:
     autorizado = st.session_state.get(f"autorizado_{paciente_id}", False)
     estilo.html(estilo.pasos(PASOS, 2 if borrador else 1 if autorizado else 0))
-    if cita:
-        st.info(f"Atendiendo la cita de las {cita['hora']} ({cita['tipo'].lower()}).", icon=":material/event_available:")
 
-    grabar, ayuda = st.columns([1.6, 1], gap="large")
+    # Con el borrador listo, la grabadora se pliega para que el formulario quede arriba.
+    zona_grabar = (st.expander("Grabar otra vez o usar otro audio", icon=":material/mic:") if borrador
+                   else st.container())
+    grabar, antes = zona_grabar.columns([1.5, 1], gap="large")
     with grabar, st.container(key="tarjeta-grabar"):
+        detalle = f"Cita de las {cita['hora']} · {cita['tipo'].lower()}" if cita else ""
+        estilo.html(estilo.titulo("Graba la consulta", "mic", "coral", detalle))
         autorizado = st.toggle("La familia autorizó grabar la consulta", key=f"autorizado_{paciente_id}")
         grabado = st.audio_input("Graba la consulta completa", key=f"audio_{paciente_id}", disabled=not autorizado)
         with st.container(horizontal=True, vertical_alignment="center"):
@@ -141,19 +199,17 @@ with nueva_tab:
                 if ejemplo:
                     st.audio(str(ejemplo))
                 escrito = st.text_area("O pega la transcripción", key=f"escrito_{paciente_id}")
-    with ayuda:
         usadas = db.transcripciones_semana(paciente_id)
-        estilo.html(
-            estilo.bloque("Cómo funciona", '<p class="ceni-texto">Graba toda la consulta. Al terminar, Ceni la '
-                          "transcribe con Whisper y arma la nota, la receta y lo nuevo de la historia clínica. "
-                          "Tú revisas, corriges y firmas.</p>")
-            + estilo.chips([
-                estilo.chip("El audio no se guarda", "salvia"),
-                estilo.chip(f"{usadas} de {db.LIMITE_SEMANAL} transcripciones esta semana", "gris"),
-            ])
-        )
+        estilo.html(estilo.chips([
+            estilo.chip("El audio no se guarda", "menta"),
+            estilo.chip("Ceni documenta; tú decides y firmas", "violeta"),
+            estilo.chip(f"{usadas} de {db.LIMITE_SEMANAL} transcripciones esta semana", "gris"),
+        ]))
         if not hay_clave():
             st.warning("Falta la clave de OpenAI (OPENAI_API_KEY). Sin ella no se puede transcribir.")
+
+    with antes, st.container(key="tarjeta-antes"):
+        estilo.html(estilo.titulo("Antes de empezar", "lightbulb", "sol") + antes_de_empezar_html(atenciones, historia))
 
     if procesar:
         hay_audio = bool(grabado or subido or ejemplo)
@@ -163,7 +219,9 @@ with nueva_tab:
             st.error("Primero graba la consulta, sube un audio o pega la transcripción.")
         elif puede_procesar(paciente_id):
             st.session_state["usos_ia"] = st.session_state.get("usos_ia", 0) + 1
+            st.session_state.pop("recien_firmada", None)
             db.registrar_transcripcion(paciente_id)
+            inicio = monotonic()  # para decirle al médico cuánto tardó Ceni
             try:
                 with st.status("Ceni está trabajando…", expanded=True) as estado:
                     if hay_audio:
@@ -190,6 +248,8 @@ with nueva_tab:
                     "transcripcion": texto,
                     "resultado": resultado,
                     "consentimiento_en": datetime.now().isoformat(timespec="seconds"),
+                    "segundos_ia": monotonic() - inicio,
+                    "listo_en": monotonic(),  # desde aquí empieza la revisión del médico
                 }
             except Exception as error:  # clave inválida, sin saldo, audio dañado...
                 st.error(f"No se pudo procesar la atención: {error}")
@@ -199,16 +259,21 @@ with nueva_tab:
         resultado, b = borrador["resultado"], borrador["id"]
         nota = resultado.atencion
         propuesta = fusionar_historia(historia, resultado.historia_nueva)
-        aviso_col, transcripcion_col = st.columns([3, 1], vertical_alignment="center")
-        aviso_col.success("Ceni armó el borrador. Revísalo, corrígelo y fírmalo.", icon=":material/auto_awesome:")
-        with transcripcion_col.popover("Ver la transcripción", icon=":material/subject:", width="stretch"):
-            st.write(borrador["transcripcion"])
+        with st.container(key="heroe-borrador"):
+            aviso_col, transcripcion_col = st.columns([3, 1], vertical_alignment="center")
+            aviso_col.html(
+                estilo.titulo("Tu borrador está listo", "auto_awesome", "vidrio")
+                + f'<p class="ceni-texto">Ceni lo armó en {duracion_texto(borrador["segundos_ia"])} con lo que se habló '
+                "en la consulta. Revísalo, corrige lo que haga falta y fírmalo.</p>"
+            )
+            with transcripcion_col.popover("Ver la transcripción", icon=":material/subject:", width="stretch"):
+                st.write(borrador["transcripcion"])
 
         with st.form(f"revision_{b}"):
             if nota.por_confirmar:
                 st.warning("Por confirmar: " + "; ".join(nota.por_confirmar), icon=":material/help:")
 
-            estilo.seccion(1, "Anamnesis")
+            estilo.seccion(1, "Anamnesis", tono="violeta")
             c1, c2, c3 = st.columns([1, 2, 1])
             fecha = c1.date_input("Fecha de la atención", value=date.today(), format="DD/MM/YYYY")
             motivo = c2.text_input("Motivo de consulta", nota.motivo)
@@ -216,14 +281,14 @@ with nueva_tab:
             resumen = st.text_area("Resumen de la atención", nota.resumen, height=80)
             relato = st.text_area("Relato de la familia (uno por línea)", "\n".join(nota.relato))
 
-            estilo.seccion(2, "Funciones biológicas", "vacío si no se habló")
+            estilo.seccion(2, "Funciones biológicas", "vacío si no se habló", tono="menta")
             funciones = {}
             for i, (campo, titulo) in enumerate(TITULOS_FUNCIONES.items()):
                 if i % 3 == 0:
                     columnas = st.columns(3)
                 funciones[campo] = columnas[i % 3].text_input(titulo, getattr(nota.funciones_biologicas, campo)).strip()
 
-            estilo.seccion(3, "Funciones vitales y antropometría", "el IMC lo calcula Ceni")
+            estilo.seccion(3, "Funciones vitales y antropometría", "el IMC lo calcula Ceni", tono="cielo")
             signos = {}
             for columna, (campo, (titulo, paso, formato)) in zip(st.columns(len(SIGNOS)), SIGNOS.items()):
                 signos[campo] = columna.number_input(
@@ -231,10 +296,10 @@ with nueva_tab:
                     step=paso, format=formato,
                 )
 
-            estilo.seccion(4, "Examen físico y neurológico")
+            estilo.seccion(4, "Examen físico y neurológico", tono="coral")
             examen = st.text_area("Hallazgos (uno por línea)", "\n".join(nota.examen), label_visibility="collapsed")
 
-            estilo.seccion(5, "Diagnósticos", "CIE-10 · D definitivo, P presuntivo, R repetitivo")
+            estilo.seccion(5, "Diagnósticos", "CIE-10 · D definitivo, P presuntivo, R repetitivo", tono="violeta")
             diagnosticos_editados = st.data_editor(
                 pd.DataFrame([d.model_dump() for d in nota.diagnosticos], columns=["tipo", "descripcion", "cie10"]),
                 num_rows="dynamic", hide_index=True, width="stretch", key=f"dx_{b}",
@@ -250,7 +315,7 @@ with nueva_tab:
                 },
             )
 
-            estilo.seccion(6, "Tratamiento", "receta según la Ley 29459")
+            estilo.seccion(6, "Tratamiento", "receta según la Ley 29459", tono="rosa")
             for alerta in alertas_receta(resultado.receta, propuesta):
                 st.warning(alerta, icon=":material/medication:")
             receta_editada = st.data_editor(
@@ -259,13 +324,14 @@ with nueva_tab:
                 column_config={c: st.column_config.TextColumn(t) for c, t in COLUMNAS_RECETA.items()},
             )
 
-            estilo.seccion(7, "Plan de trabajo", "uno por línea")
+            estilo.seccion(7, "Plan de trabajo", "uno por línea", tono="sol")
             p1, p2, p3 = st.columns(3)
             examenes = p1.text_area("Exámenes auxiliares", "\n".join(nota.examenes_auxiliares))
             interconsultas = p2.text_area("Interconsultas y terapias", "\n".join(nota.interconsultas))
             indicaciones = p3.text_area("Indicaciones", "\n".join(nota.indicaciones))
 
-            estilo.seccion(8, "Historia clínica", "ya incluye lo nuevo de hoy; los diagnósticos se agregan solos")
+            estilo.seccion(8, "Historia clínica", "ya incluye lo nuevo de hoy; los diagnósticos se agregan solos",
+                           tono="cielo")
             nueva = resultado.historia_nueva.model_dump()
             campos_historia = {}
             hc_izq, hc_der = st.columns(2)
@@ -279,7 +345,7 @@ with nueva_tab:
                 else:
                     campos_historia[campo] = columna.text_area(titulo, valor).strip()
 
-            estilo.seccion(9, "Próximo control")
+            estilo.seccion(9, "Próximo control", tono="menta")
             semanas = nota.proximo_control_semanas
             k1, k2, k3, k4 = st.columns([2, 1.3, 1.3, 1], vertical_alignment="bottom")
             proximo = k1.text_input("Como lo indicó el médico", nota.proximo_control)
@@ -289,7 +355,8 @@ with nueva_tab:
             por_confirmar = st.text_area("Por confirmar (bórralo cuando lo hayas revisado)", "\n".join(nota.por_confirmar))
 
             st.caption(f"Al firmar, la atención queda registrada a nombre de {medico['nombre']}, con fecha y hora.")
-            firmar = st.form_submit_button("Firmar y guardar", type="primary", icon=":material/signature:")
+            firmar = st.form_submit_button("Firmar y guardar", type="primary", icon=":material/signature:",
+                                           key=f"grande-firmar-{b}")
 
         if firmar:
             receta = [Medicamento(**fila) for fila in filas(receta_editada, "medicamento")]
@@ -306,18 +373,22 @@ with nueva_tab:
                 HistoriaClinica(**campos_historia, diagnosticos=propuesta.diagnosticos),
                 HISTORIA_VACIA.model_copy(update={"diagnosticos": diagnosticos}),
             )
-            db.guardar_atencion(
+            atencion_id = db.guardar_atencion(
                 paciente_id, fecha, borrador["transcripcion"], nota_final, receta, historia_final,
                 firmado_por=medico["nombre"], consentimiento_en=borrador["consentimiento_en"],
                 cita_id=cita["id"] if cita else None,
                 proxima_cita=(fecha_control, hora_control.strftime("%H:%M")) if agendar else None,
             )
+            st.session_state["recien_firmada"] = {
+                "paciente_id": paciente_id,
+                "atencion_id": atencion_id,
+                "segundos_ia": borrador["segundos_ia"],
+                "segundos_revision": monotonic() - borrador["listo_en"],
+                "detalle": "La historia clínica se actualizó"
+                + (f" y el próximo control quedó agendado para el {dia_texto(fecha_control)}." if agendar else "."),
+            }
             del st.session_state["borrador"]
             st.session_state.pop("cita_id", None)
-            st.session_state["aviso"] = (
-                f"Atención del {fecha_texto(fecha)} firmada y guardada. La historia clínica se actualizó"
-                + (f" y el próximo control quedó agendado para el {dia_texto(fecha_control)}." if agendar else ".")
-            )
             st.session_state["alertas_guardadas"] = alertas_receta(receta, historia_final)
             st.session_state["ir_a_pestana"] = ATENCIONES
             st.rerun()
@@ -327,31 +398,31 @@ with historia_tab:
     izquierda, derecha = st.columns([1.45, 1], gap="medium")
     with izquierda, st.container(key="tarjeta-antecedentes"):
         estilo.html(
-            '<div class="ceni-subtitulo">Antecedentes</div>'
+            estilo.titulo("Antecedentes", "history_edu", "violeta")
             + historia_html(historia, ["antecedentes_perinatales", "desarrollo_psicomotor", "inmunizaciones",
                                        "antecedentes_personales", "antecedentes_familiares"])
         )
         st.caption(f"Historia clínica actualizada el {fecha_texto(actualizada)}.")
     with derecha:
         with st.container(key="tarjeta-problemas"):
-            estilo.html('<div class="ceni-subtitulo">Diagnósticos y terapias</div>'
+            estilo.html(estilo.titulo("Diagnósticos y terapias", "neurology", "coral")
                         + historia_html(historia, ["diagnosticos", "alergias", "terapias"]))
         with st.container(key="tarjeta-medicacion"):
             receta_actual = atenciones[0]["receta"] if atenciones else []
             desde = f"Receta del {fecha_texto(atenciones[0]['fecha'])}" if atenciones else "Sin atenciones"
-            estilo.html('<div class="ceni-subtitulo">Medicación actual</div>' + estilo.etiqueta(desde)
+            estilo.html(estilo.titulo("Medicación actual", "medication", "rosa") + estilo.etiqueta(desde)
                         + receta_html(receta_actual))
         # La atención más reciente que tenga al menos una medida registrada.
         con_signos = next((a for a in atenciones if any(a["nota"].signos_vitales.model_dump().values())), None)
         if con_signos:
             with st.container(key="tarjeta-signos"):
-                estilo.html('<div class="ceni-subtitulo">Últimas medidas</div>'
+                estilo.html(estilo.titulo("Últimas medidas", "monitor_weight", "cielo")
                             + estilo.etiqueta(fecha_texto(con_signos["fecha"]))
                             + signos_html(con_signos["nota"].signos_vitales))
 
     with st.container(key="tarjeta-evolucion"):
-        titulo, descarga = st.columns([3, 1.2], vertical_alignment="center")
-        titulo.html('<div class="ceni-subtitulo">Evolución</div>')
+        titulo_col, descarga = st.columns([3, 1.2], vertical_alignment="center")
+        titulo_col.html(estilo.titulo("Evolución", "timeline", "menta"))
         expediente = {
             "paciente": paciente,
             "historia_clinica": historia.model_dump(),
@@ -387,11 +458,9 @@ with atenciones_tab:
             with st.container(horizontal=True, vertical_alignment="center"):
                 if a["receta"]:
                     st.download_button(
-                        "Receta en PDF",
-                        receta_a_pdf(a["receta"], paciente, medico, fecha_texto(a["fecha"]), a["nota"].diagnosticos,
-                                     a["nota"].indicaciones, a["firmado_en"], a["nota"].signos_vitales.peso_kg),
-                        file_name=f"receta-{paciente['hc']}-{a['fecha']}.pdf", mime="application/pdf",
-                        icon=":material/picture_as_pdf:", key=f"pdf_{a['id']}", on_click="ignore", type="primary",
+                        "Receta en PDF", receta_pdf(a), file_name=f"receta-{paciente['hc']}-{a['fecha']}.pdf",
+                        mime="application/pdf", icon=":material/picture_as_pdf:", key=f"pdf_{a['id']}",
+                        on_click="ignore", type="primary",
                     )
                 if a["transcripcion"]:
                     with st.popover("Transcripción", icon=":material/subject:"):
@@ -415,6 +484,6 @@ with datos_tab, st.container(key="tarjeta-datos"):
         "Seguro": paciente["seguro"],
         "Próxima cita": proxima_texto,
     }
-    estilo.html('<div class="ceni-datos">' + "".join(
+    estilo.html(estilo.titulo("Datos personales", "badge", "cielo") + '<div class="ceni-datos">' + "".join(
         f'<div class="ceni-dato">{estilo.etiqueta(k)}<div class="valor">{escape(v)}</div></div>' for k, v in datos.items()
     ) + "</div>")

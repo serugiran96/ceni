@@ -235,11 +235,14 @@ def guardar_atencion(
     paciente_id: int, fecha: date, transcripcion: str, nota: NotaAtencion, receta: list[Medicamento],
     historia: HistoriaClinica, firmado_por: str, consentimiento_en: str | None, cita_id: int | None = None,
     proxima_cita: tuple[date, str] | None = None,
-) -> None:
-    """Guarda la atención firmada, actualiza la historia y la agenda, todo en una sola transacción."""
+) -> int:
+    """Guarda la atención firmada, actualiza la historia y la agenda, todo en una sola transacción.
+
+    Devuelve el id de la atención nueva.
+    """
     ahora = datetime.now().isoformat(timespec="seconds")
     with conectar() as con:
-        con.execute(
+        cursor = con.execute(
             """INSERT INTO atenciones (paciente_id, cita_id, fecha, transcripcion, nota_json, receta_json,
                                        consentimiento_en, firmado_por, firmado_en)
                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)""",
@@ -257,6 +260,7 @@ def guardar_atencion(
                 "INSERT INTO citas (paciente_id, fecha, hora, tipo) VALUES (?, ?, ?, 'Control')",
                 (paciente_id, proxima_cita[0].isoformat(), proxima_cita[1]),
             )
+    return cursor.lastrowid
 
 
 # --- Agenda -----------------------------------------------------------------------

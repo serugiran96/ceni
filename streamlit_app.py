@@ -49,7 +49,8 @@ paginas = [
 pagina = st.navigation(paginas, position="hidden")  # el menú lo dibujamos abajo, debajo del logo
 
 with st.sidebar:
-    st.image(str(ASSETS / "logo.png"), width=210)
+    st.image(str(ASSETS / "logo-blanco.png"), width=200)  # el logo en blanco, sobre la barra oscura
+    estilo.html('<p class="ceni-lema">Tú atiendes. Ceni escribe la historia clínica y la receta.</p>')
     st.write("")
     for p in paginas:
         st.page_link(p, width="stretch")
@@ -58,8 +59,9 @@ with st.sidebar:
     nombre = medico["nombre"].split()
     estilo.html(
         '<div class="ceni-medico">'
-        f'<div class="ceni-avatar" style="background:#4F7487;color:#fff">{nombre[1][0]}{nombre[-1][0]}</div>'
-        f'<div><div class="ceni-nombre" style="font-size:.95rem">{medico["nombre"]}</div>'
+        '<div class="ceni-avatar" style="background:linear-gradient(135deg,#FFB020,#FF7A59)">'
+        f'{nombre[1][0]}{nombre[-1][0]}</div>'
+        f'<div><div class="ceni-nombre" style="font-size:.98rem">{medico["nombre"]}</div>'
         f'<div class="ceni-meta">{medico["especialidad"]}</div></div></div>'
     )
 

@@ -1,8 +1,9 @@
 """Página de inicio: la agenda del médico.
 
-Desde aquí empieza el día: el médico ve sus citas, presiona "Atender" y entra
-a la ficha del paciente con la cita enlazada. Al firmar la atención, la cita
-queda como atendida.
+Arriba está el siguiente paciente, con lo que el médico necesita recordar antes
+de verlo (la última atención, lo que quedó pendiente y su medicación). Al
+presionar "Atender" entra a la ficha con la cita enlazada; al firmar la
+atención, la cita queda como atendida.
 """
 
 from datetime import date, time, timedelta
@@ -11,14 +12,14 @@ from html import escape
 import streamlit as st
 
 from app import estilo
-from app.formato import chips_paciente, cuando_texto, dia_texto, fecha_corta
+from app.formato import antes_de_empezar_html, chips_paciente, cuando_texto, dia_texto, fecha_corta
 from backend import db
 
 ESTADOS = {  # color e ícono de la etiqueta de las citas que ya pasaron
     "Atendida": ("green", ":material/check:"),
     "No asistió": ("gray", ":material/close:"),
 }
-TONO_TIPO = {"Control": "cielo", "Primera vez": "durazno"}
+TONO_TIPO = {"Control": "violeta", "Primera vez": "coral"}
 
 
 def abrir_ficha(paciente_id: int, cita_id: int | None = None) -> None:
@@ -28,40 +29,105 @@ def abrir_ficha(paciente_id: int, cita_id: int | None = None) -> None:
     st.switch_page("app/ficha.py")
 
 
+@st.dialog("Agendar una cita")
+def agendar(dia_sugerido: date) -> None:
+    pacientes = db.listar_pacientes()
+    nombres = {p["id"]: p["nombre"] for p in pacientes}
+    with st.form("nueva_cita", border=False):
+        paciente_id = st.selectbox("Paciente", list(nombres), format_func=nombres.get)
+        fecha_col, hora_col = st.columns(2)
+        fecha = fecha_col.date_input("Fecha", value=dia_sugerido, min_value=date.today(), format="DD/MM/YYYY")
+        a_las = hora_col.time_input("Hora", value=time(9, 0), step=timedelta(minutes=20))
+        tipo = st.segmented_control("Tipo", ["Control", "Primera vez"], default="Control")
+        if st.form_submit_button("Agendar", type="primary", icon=":material/event_available:", width="stretch"):
+            db.crear_cita(paciente_id, fecha, a_las.strftime("%H:%M"), tipo or "Control")
+            st.session_state["aviso_agenda"] = (
+                f"Cita agendada: {nombres[paciente_id]}, {dia_texto(fecha)} a las {a_las:%H:%M}."
+            )
+            st.rerun()
+
+
+st.session_state.pop("recien_firmada", None)  # el aviso de "atención firmada" solo se ve en la ficha
 medico = db.medico()
 nombre = medico["nombre"].split()
 hoy = date.today()
 
-estilo.encabezado(
-    f"Hola, {nombre[0]} {nombre[-1]}",
-    "Presiona «Atender» para abrir la ficha del paciente y grabar la consulta.",
-    dia_texto(hoy),
-)
-if aviso := st.session_state.pop("aviso_agenda", None):
-    st.success(aviso, icon=":material/check_circle:")
+principal, lateral = st.columns([2.35, 1], gap="large")
 
-principal, lateral = st.columns([2.4, 1], gap="large")
+# --- Columna lateral: el día que se mira, agendar y los próximos días ----------------
+with lateral:
+    with st.container(key="tarjeta-dia"):
+        estilo.html(estilo.titulo("Calendario", "calendar_month", "cielo"))
+        dia = st.date_input("Día", value=hoy, format="DD/MM/YYYY", label_visibility="collapsed")
+        if st.button("Agendar una cita", icon=":material/add:", width="stretch"):
+            agendar(max(dia, hoy))
 
+    with st.container(key="tarjeta-proximas"):
+        estilo.html(estilo.titulo("Próximos 7 días", "upcoming", "sol"))
+        proximas = db.citas_entre(dia + timedelta(days=1), dia + timedelta(days=7))
+        filas = "".join(
+            f'<div class="ceni-persona" style="margin-bottom:.75rem">'
+            f'<div class="ceni-hora" style="{estilo.tono_css(TONO_TIPO.get(c["tipo"], "violeta"))};font-size:.95rem;min-width:64px">'
+            f'{escape(fecha_corta(c["fecha"]))}<small>{c["hora"]}</small></div>'
+            f'<div><div class="ceni-nombre" style="font-size:.98rem">{escape(c["nombre"])}</div>'
+            f'<div class="ceni-meta">{escape(c["tipo"])} · {escape(cuando_texto(c["fecha"]))}</div></div></div>'
+            for c in proximas
+        )
+        estilo.html(filas or '<p class="ceni-vacio">Sin citas programadas.</p>')
+
+# --- Columna principal: saludo, siguiente paciente y citas del día --------------------
 with principal:
-    elegir, resumen = st.columns([1, 2.2], vertical_alignment="bottom")
-    dia = elegir.date_input("Día", value=hoy, format="DD/MM/YYYY")
     citas = db.citas_entre(dia, dia)
-    with resumen:
-        estilo.html(estilo.cifras([
-            (str(len(citas)), "", "citas", "cielo"),
-            (str(sum(c["estado"] == "Programada" for c in citas)), "", "por atender", "durazno"),
-            (str(sum(c["estado"] == "Atendida" for c in citas)), "", "atendidas", "salvia"),
-        ]))
-    estilo.html(f'<div class="ceni-subtitulo" style="margin-top:1rem">{escape(cuando_texto(dia).capitalize())}</div>')
+    siguiente = next((c for c in citas if c["estado"] == "Programada"), None)
+    por_atender = sum(c["estado"] == "Programada" for c in citas)
+    estilo.encabezado(
+        "Hola,",
+        f"{cuando_texto(dia).capitalize()} tienes {len(citas)} citas y te faltan {por_atender} por atender."
+        if citas else f"No tienes citas {cuando_texto(dia)}.",
+        dia_texto(hoy), resaltado=f"{nombre[0]} {nombre[-1]}",
+    )
+    if aviso := st.session_state.pop("aviso_agenda", None):
+        st.success(aviso, icon=":material/check_circle:")
+
+    if siguiente:
+        historia_siguiente, _ = db.historia_de(siguiente["paciente_id"])
+        with st.container(key="heroe-siguiente"):
+            quien, resumen = st.columns([1.3, 1], gap="large", vertical_alignment="center")
+            with quien:
+                estilo.html(
+                    f'<div class="ceni-etiqueta">Siguiente paciente · {cuando_texto(dia)} {siguiente["hora"]} · '
+                    f'{escape(siguiente["tipo"])}</div>'
+                    + estilo.persona(
+                        siguiente["nombre"], siguiente["paciente_id"], f"{siguiente['edad']} · {siguiente['hc']}",
+                        chips_paciente(siguiente["diagnosticos"], siguiente["alergias"], sobre_color=True), grande=True,
+                    )
+                )
+                with st.container(key="grande-atender"):
+                    if st.button("Atender ahora", key="atender_siguiente", type="primary", icon=":material/mic:"):
+                        abrir_ficha(siguiente["paciente_id"], siguiente["id"])
+            resumen.html('<div class="ceni-panel">' + antes_de_empezar_html(
+                db.atenciones_de(siguiente["paciente_id"]), historia_siguiente, maximo=3) + "</div>")
+    elif citas:
+        st.success("Atendiste todas las citas de este día.", icon=":material/celebration:")
+
+    st.write("")
+    estilo.html(estilo.cifras([
+        (str(len(citas)), "", "citas", "violeta"),
+        (str(por_atender), "", "por atender", "coral"),
+        (str(sum(c["estado"] == "Atendida" for c in citas)), "", "atendidas", "menta"),
+        (str(len(proximas)), "", "en los próximos 7 días", "sol"),
+    ]))
+    st.write("")
+    estilo.html(estilo.titulo(f"Agenda de {cuando_texto(dia)}", "event_note", "violeta", f"{len(citas)} citas"))
     if not citas:
         st.info("No hay citas este día.", icon=":material/event_busy:")
 
     for c in citas:
         apagada = "" if c["estado"] == "Programada" else "-apagada"
         with st.container(key=f"tarjeta-cita-{c['id']}{apagada}"):
-            hora, quien, acciones = st.columns([0.95, 4.6, 2], vertical_alignment="center")
+            hora, quien, acciones = st.columns([0.95, 4.4, 2], vertical_alignment="center")
             hora.html(
-                f'<div class="ceni-hora" style="{estilo.tono_css(TONO_TIPO.get(c["tipo"], "cielo"))}">'
+                f'<div class="ceni-hora" style="{estilo.tono_css(TONO_TIPO.get(c["tipo"], "violeta"))}">'
                 f'{c["hora"]}<small>{escape(c["tipo"])}</small></div>'
             )
             quien.html(estilo.persona(
@@ -80,33 +146,3 @@ with principal:
                     st.badge(c["estado"], color=color, icon=icono, width="stretch")
                     if st.button("Ver ficha", key=f"ver_{c['id']}", icon=":material/folder_shared:", width="stretch"):
                         abrir_ficha(c["paciente_id"])
-
-with lateral:
-    with st.container(key="tarjeta-agendar"):
-        estilo.html('<div class="ceni-subtitulo">Agendar una cita</div>')
-        pacientes = db.listar_pacientes()
-        nombres = {p["id"]: p["nombre"] for p in pacientes}
-        with st.form("nueva_cita", clear_on_submit=True, border=False):
-            paciente_id = st.selectbox("Paciente", list(nombres), format_func=nombres.get)
-            fecha = st.date_input("Fecha", value=max(dia, hoy), min_value=hoy, format="DD/MM/YYYY")
-            a_las = st.time_input("Hora", value=time(9, 0), step=timedelta(minutes=20))
-            tipo = st.segmented_control("Tipo", ["Control", "Primera vez"], default="Control")
-            if st.form_submit_button("Agendar", type="primary", icon=":material/event_available:", width="stretch"):
-                db.crear_cita(paciente_id, fecha, a_las.strftime("%H:%M"), tipo or "Control")
-                st.session_state["aviso_agenda"] = (
-                    f"Cita agendada: {nombres[paciente_id]}, {dia_texto(fecha)} a las {a_las:%H:%M}."
-                )
-                st.rerun()
-
-    with st.container(key="tarjeta-proximas"):
-        estilo.html('<div class="ceni-subtitulo">Próximos 7 días</div>')
-        proximas = db.citas_entre(dia + timedelta(days=1), dia + timedelta(days=7))
-        filas = "".join(
-            f'<div class="ceni-persona" style="margin-bottom:.7rem">'
-            f'<div class="ceni-hora" style="{estilo.tono_css(TONO_TIPO.get(c["tipo"], "cielo"))};font-size:.95rem;min-width:62px">'
-            f'{escape(fecha_corta(c["fecha"]))}<small>{c["hora"]}</small></div>'
-            f'<div><div class="ceni-nombre" style="font-size:.95rem">{escape(c["nombre"])}</div>'
-            f'<div class="ceni-meta">{escape(c["tipo"])} · {escape(cuando_texto(c["fecha"]))}</div></div></div>'
-            for c in proximas
-        )
-        estilo.html(filas or '<p class="ceni-vacio">Sin citas programadas.</p>')

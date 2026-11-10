@@ -75,10 +75,11 @@ def diagnostico_texto(d: Diagnostico) -> str:
     return f"{d.descripcion} ({d.cie10})" if d.cie10 else d.descripcion
 
 
-def chip_diagnostico(d: Diagnostico, con_tipo: bool = True) -> str:
+def chip_diagnostico(d: Diagnostico, con_tipo: bool = True, sobre_color: bool = False) -> str:
     codigo = f"<b>{escape(d.cie10)}</b> " if d.cie10 else ""
     tipo = f" · {d.tipo}" if con_tipo else ""
-    return estilo.chip(f"{codigo}{escape(d.descripcion)}{tipo}", "lavanda", TIPOS_DIAGNOSTICO[d.tipo], crudo=True)
+    tono = "vidrio" if sobre_color else "violeta"
+    return estilo.chip(f"{codigo}{escape(d.descripcion)}{tipo}", tono, TIPOS_DIAGNOSTICO[d.tipo], crudo=True)
 
 
 def alergias_reales(alergias: list[str]) -> list[str]:
@@ -86,10 +87,11 @@ def alergias_reales(alergias: list[str]) -> list[str]:
     return [a for a in alergias if not a.lower().startswith(("no ", "niega", "ninguna", "sin "))]
 
 
-def chips_paciente(diagnosticos: list[Diagnostico], alergias: list[str]) -> str:
+def chips_paciente(diagnosticos: list[Diagnostico], alergias: list[str], sobre_color: bool = False) -> str:
+    """Etiquetas de diagnósticos y alergias. `sobre_color=True` dentro de una tarjeta con degradado."""
     return estilo.chips(
-        [chip_diagnostico(d, con_tipo=False) for d in diagnosticos]
-        + [estilo.chip(f"Alergia: {a}", "rosa") for a in alergias_reales(alergias)]
+        [chip_diagnostico(d, con_tipo=False, sobre_color=sobre_color) for d in diagnosticos]
+        + [estilo.chip(f"⚠ Alergia: {a}", "alerta" if sobre_color else "rosa") for a in alergias_reales(alergias)]
     )
 
 
@@ -104,13 +106,13 @@ def signos_html(signos: SignosVitales) -> str:
     if signos.peso_kg:
         items.append((_num(signos.peso_kg), "kg", "Peso", "cielo"))
     if signos.talla_cm:
-        items.append((_num(signos.talla_cm), "cm", "Talla", "salvia"))
+        items.append((_num(signos.talla_cm), "cm", "Talla", "menta"))
     if valor := imc(signos):
-        items.append((_num(valor), "", "IMC", "lavanda"))
+        items.append((_num(valor), "", "IMC", "violeta"))
     if signos.perimetro_cefalico_cm:
-        items.append((_num(signos.perimetro_cefalico_cm), "cm", "Perímetro cefálico", "durazno"))
+        items.append((_num(signos.perimetro_cefalico_cm), "cm", "Perímetro cefálico", "coral"))
     if signos.temperatura_c:
-        items.append((_num(signos.temperatura_c), "°C", "Temperatura", "mantequilla"))
+        items.append((_num(signos.temperatura_c), "°C", "Temperatura", "sol"))
     if signos.frecuencia_cardiaca:
         items.append((str(signos.frecuencia_cardiaca), "lpm", "Frec. cardiaca", "rosa"))
     if signos.frecuencia_respiratoria:
@@ -131,9 +133,9 @@ def diagnosticos_html(diagnosticos: list[Diagnostico]) -> str:
         return '<p class="ceni-vacio">Sin diagnóstico registrado.</p>'
     return "".join(
         '<div class="ceni-dx">'
-        + (estilo.chip(d.cie10, "lavanda", CIE10[d.cie10]) if d.cie10 else estilo.chip("Sin código", "gris"))
-        + f'<span class="ceni-texto">{escape(d.descripcion)}</span>'
-        f'<span class="ceni-meta">· {TIPOS_DIAGNOSTICO[d.tipo]}</span></div>'
+        + (estilo.chip(d.cie10, "violeta", CIE10[d.cie10]) if d.cie10 else estilo.chip("Sin código", "gris"))
+        + f'<div class="ceni-texto">{escape(d.descripcion)} '
+        f'<span class="ceni-meta">· {TIPOS_DIAGNOSTICO[d.tipo]}</span></div></div>'
         for d in diagnosticos
     )
 
@@ -145,9 +147,9 @@ def receta_html(receta: list[Medicamento]) -> str:
     for m in receta:
         extras = []
         if m.cantidad:
-            extras.append(estilo.chip(f"Cantidad: {m.cantidad}", "salvia"))
+            extras.append(estilo.chip(f"Cantidad: {m.cantidad}", "menta"))
         if requiere_receta_especial(m.medicamento):
-            extras.append(estilo.chip("Psicotrópico · recetario especial", "mantequilla"))
+            extras.append(estilo.chip("Psicotrópico · recetario especial", "sol"))
         partes.append(
             f'<div class="ceni-bloque"><div class="ceni-texto"><b>{escape(m.medicamento)}</b></div>'
             f'<div class="ceni-texto">{escape(linea_medicamento(m))}</div>'
@@ -197,3 +199,54 @@ def historia_html(historia: HistoriaClinica, campos: list[str]) -> str:
             contenido = estilo.texto(valor)
         partes.append(estilo.bloque(TITULOS_HISTORIA[campo], contenido))
     return "".join(partes)
+
+
+# --- Antes de empezar: lo que el médico necesita ver antes de grabar ----------------
+
+def pendientes(nota: NotaAtencion) -> list[tuple[str, str, str]]:
+    """Lo que quedó pendiente en una atención: exámenes, interconsultas y dudas por confirmar."""
+    return (
+        [("biotech", "cielo", f"Examen: {e}") for e in nota.examenes_auxiliares]
+        + [("diversity_3", "violeta", f"Interconsulta: {i}") for i in nota.interconsultas]
+        + [("help", "sol", f"Por confirmar: {p}") for p in nota.por_confirmar]
+    )
+
+
+def medicacion(receta: list[Medicamento]) -> list[tuple[str, str, str]]:
+    """Medicación en una línea corta por medicamento: nombre, dosis y frecuencia."""
+    return [
+        ("medication", "coral", " · ".join(x for x in (m.medicamento, m.dosis, m.frecuencia) if x))
+        for m in receta
+    ]
+
+
+def antes_de_empezar_html(atenciones: list[dict], historia: HistoriaClinica, maximo: int = 0) -> str:
+    """Resumen previo: la última atención, lo que quedó pendiente, la medicación y las alergias.
+
+    `atenciones` va de la más reciente a la más antigua. `maximo` limita cuántos
+    pendientes se muestran (0 = todos), para la versión corta de la agenda.
+    """
+    if not atenciones:
+        partes = [estilo.bloque("Primera consulta", estilo.texto(
+            "Todavía no hay atenciones. Ceni armará la historia clínica con lo que se hable hoy."))]
+    else:
+        ultima = atenciones[0]
+        lista_pendientes = pendientes(ultima["nota"])
+        if maximo and len(lista_pendientes) > maximo:
+            lista_pendientes = lista_pendientes[:maximo] + [("more_horiz", "gris", f"y {len(lista_pendientes) - maximo} más")]
+        partes = [
+            estilo.bloque(f"Última atención · {fecha_corta(ultima['fecha'])}", estilo.texto(ultima["nota"].resumen)),
+            estilo.bloque("Quedó pendiente", estilo.items(lista_pendientes)),
+            estilo.bloque("Medicación actual", estilo.items(medicacion(ultima["receta"]), "Sin medicación")),
+        ]
+    alergias = alergias_reales(historia.alergias)
+    if alergias:
+        partes.append(estilo.bloque("Alergias", estilo.items([("warning", "rosa", a) for a in alergias])))
+    return "".join(partes)
+
+
+def duracion_texto(segundos: float) -> str:
+    """42 -> '42 s'; 102 -> '1 min 42 s'."""
+    segundos = max(1, round(segundos))
+    minutos, resto = divmod(segundos, 60)
+    return f"{minutos} min {resto} s" if minutos else f"{resto} s"
