@@ -1,0 +1,53 @@
+# Tema visual de Ceni: los colores del logo (azul pizarra, celeste y salvia)
+# más pasteles (durazno, lavanda, mantequilla y rosa) para las etiquetas.
+# Tipografía: Outfit en los títulos (parecida a la del logo) y Figtree en el texto.
+
+[theme]
+base = "light"
+primaryColor = "#4F7487"
+backgroundColor = "#F6F9FA"
+secondaryBackgroundColor = "#EDF3F6"
+textColor = "#263B47"
+linkColor = "#4F7487"
+borderColor = "#DCE6EC"
+showWidgetBorder = true
+baseRadius = "0.75rem"
+buttonRadius = "full"
+font = "Figtree:https://fonts.googleapis.com/css2?family=Figtree:wght@400;500;600;700&display=swap"
+headingFont = "Outfit:https://fonts.googleapis.com/css2?family=Outfit:wght@500;600;700&display=swap"
+headingFontWeights = [700, 600, 600, 600, 600, 600]
+headingFontSizes = ["2.1rem", "1.6rem", "1.3rem", "1.1rem", "1rem", "0.9rem"]
+
+# Colores de las etiquetas, avisos y badges (fondo pastel + texto oscuro del mismo tono).
+blueColor = "#4F7487"
+blueBackgroundColor = "#DCE8F0"
+blueTextColor = "#2F5568"
+greenColor = "#5E9A68"
+greenBackgroundColor = "#DDEEDF"
+greenTextColor = "#2F6138"
+orangeColor = "#D08A5B"
+orangeBackgroundColor = "#FBE3D3"
+orangeTextColor = "#8A4A22"
+violetColor = "#8574B8"
+violetBackgroundColor = "#E6E0F4"
+violetTextColor = "#54448A"
+yellowColor = "#C9A43A"
+yellowBackgroundColor = "#FAF0CF"
+yellowTextColor = "#6E520A"
+redColor = "#C9617F"
+redBackgroundColor = "#F8DDE4"
+redTextColor = "#8C3150"
+grayColor = "#8A9AA3"
+grayBackgroundColor = "#E9EEF1"
+grayTextColor = "#4F606A"
+
+[theme.sidebar]
+backgroundColor = "#E8F0F5"
+secondaryBackgroundColor = "#FFFFFF"
+borderColor = "#D3E0E8"
+
+[client]
+toolbarMode = "minimal"
+
+[browser]
+gatherUsageStats = false

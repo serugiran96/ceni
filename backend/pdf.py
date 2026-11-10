@@ -38,44 +38,52 @@ class _PDF(FPDF):
         self.cell(0, 5, _limpio("Demo de Ceni con datos inventados. No es una receta válida."), align="C")
 
 
+PIZARRA = (79, 116, 135)  # azul del logo de Ceni
+
+
 def receta_a_pdf(
     receta: list[Medicamento], paciente: dict, medico: dict, fecha: str,
-    diagnosticos: list[Diagnostico], plan: list[str], firmado_en: str,
+    diagnosticos: list[Diagnostico], indicaciones: list[str], firmado_en: str, peso_kg: float | None = None,
 ) -> bytes:
     pdf = _PDF(format=(148, 210))  # A5 en milímetros
     pdf.set_margins(14, 12, 14)
     pdf.set_auto_page_break(True, margin=18)
     pdf.add_page()
 
-    def texto(t: str, tam: int = 10, estilo: str = "", alto: float = 5.5, color: int = 30):
+    def texto(t: str, tam: int = 10, estilo: str = "", alto: float = 5.5, color: int | tuple = 30):
         pdf.set_font("Helvetica", estilo, tam)
-        pdf.set_text_color(color)
+        if isinstance(color, tuple):  # (r, g, b)
+            pdf.set_text_color(*color)
+        else:  # gris de 0 (negro) a 255 (blanco)
+            pdf.set_text_color(color)
         pdf.multi_cell(0, alto, _limpio(t), new_x="LMARGIN", new_y="NEXT", align="L")
 
-    texto(medico["nombre"], 13, "B", 7)
+    texto(medico["nombre"], 13, "B", 7, PIZARRA)
     texto(f"{medico['especialidad']} · {medico['colegiatura']}", 8, "", 5, 110)
     pdf.ln(3)
-    pdf.set_draw_color(200)
+    pdf.set_draw_color(*PIZARRA)
     pdf.line(pdf.l_margin, pdf.get_y(), pdf.w - pdf.r_margin, pdf.get_y())
     pdf.ln(3)
     texto(f"Paciente: {paciente['nombre']} · {paciente['edad']}", 10, "B")
-    texto(f"Fecha: {fecha}", 9, "", 5, 90)
+    texto(f"{paciente['hc']} · Fecha: {fecha}" + (f" · Peso: {peso_kg:g} kg" if peso_kg else ""), 9, "", 5, 90)
     if diagnosticos:
         texto("Dx: " + "; ".join(f"{d.cie10} {d.descripcion}".strip() for d in diagnosticos), 9, "", 5, 90)
     pdf.ln(3)
-    texto("Rp/", 14, "B", 8)
+    texto("Rp/", 14, "B", 8, PIZARRA)
     for i, m in enumerate(receta, start=1):
         texto(f"{i}. {m.medicamento}", 11, "B", 6)
         texto(linea_medicamento(m))
+        if m.cantidad:
+            texto(f"Cantidad: {m.cantidad}", 9, "", 5, 60)
         if m.indicaciones:
             texto(m.indicaciones, 9, "I", 5, 90)
         if lista := requiere_receta_especial(m.medicamento):
             texto(f"Psicotrópico de la {lista}: se dispensa solo con el recetario especial de DIGEMID.", 8, "B", 4.5, 150)
         pdf.ln(2)
-    if plan:
+    if indicaciones:
         pdf.ln(2)
-        texto("Indicaciones", 11, "B", 6)
-        for p in plan:
+        texto("Indicaciones", 11, "B", 6, PIZARRA)
+        for p in indicaciones:
             texto(f"-  {p}", 9)
     pdf.ln(10)
     texto("_______________________", 10, "", 5, 120)

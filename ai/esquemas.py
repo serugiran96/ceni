@@ -43,16 +43,25 @@ CIE10 = {
 CodigoCIE10 = Literal[("", *CIE10)]  # "" = sin código en el catálogo
 
 
+TipoDiagnostico = Literal["D", "P", "R"]  # Definitivo, Presuntivo, Repetitivo (como en el HIS del MINSA)
+TIPOS_DIAGNOSTICO = {"D": "Definitivo", "P": "Presuntivo", "R": "Repetitivo"}
+
+
 class Diagnostico(BaseModel):
     descripcion: str = Field(description="El diagnóstico tal como lo dijo el médico.")
     cie10: CodigoCIE10 = Field(description="Código CIE-10 del catálogo que corresponde; vacío si ninguno.")
+    tipo: TipoDiagnostico = Field(
+        description="D = definitivo (confirmado hoy), P = presuntivo (sospecha, 'probable', 'descartar'), "
+        "R = repetitivo (ya era definitivo en una atención anterior y se mantiene)."
+    )
 
 
 class HistoriaClinica(BaseModel):
     """Historia clínica acumulada del paciente (se actualiza en cada atención)."""
 
-    antecedentes_perinatales: str = Field(description="Embarazo, parto, peso al nacer, complicaciones.")
-    desarrollo_psicomotor: str = Field(description="Edad en que caminó, habló, hitos del desarrollo.")
+    antecedentes_perinatales: str = Field(description="Embarazo, parto, edad gestacional, peso al nacer, APGAR, complicaciones.")
+    desarrollo_psicomotor: str = Field(description="Edad en que se sentó, caminó, dijo sus primeras palabras; hitos.")
+    inmunizaciones: str = Field(description="Estado de las vacunas según el carné.")
     antecedentes_personales: list[str] = Field(description="Enfermedades, hospitalizaciones, cirugías, exámenes previos.")
     antecedentes_familiares: list[str] = Field(description="Condiciones relevantes en la familia.")
     alergias: list[str] = Field(description="Alergias a medicamentos o alimentos.")
@@ -61,7 +70,7 @@ class HistoriaClinica(BaseModel):
 
 
 class Medicamento(BaseModel):
-    """Una línea de la receta, con lo que exige la Ley 29459."""
+    """Una línea de la receta, con lo que exige la Ley 29459 (y la receta única estandarizada)."""
 
     medicamento: str = Field(description="Denominación Común Internacional (DCI) y concentración, p. ej. 'Melatonina 3 mg'.")
     forma_farmaceutica: str = Field(description="Tableta, jarabe, gotas, cápsula... Vacío si no se dijo.")
@@ -69,18 +78,53 @@ class Medicamento(BaseModel):
     dosis: str = Field(description="Cuánto toma cada vez, p. ej. '1 tableta'.")
     frecuencia: str = Field(description="Cada cuánto y a qué hora.")
     duracion: str = Field(description="Por cuánto tiempo. Vacío si no se dijo.")
+    cantidad: str = Field(description="Cantidad total a dispensar, p. ej. '30 tabletas'. Vacío si no se dijo.")
     indicaciones: str = Field(description="Indicaciones especiales. Vacío si no hay.")
 
 
+class FuncionesBiologicas(BaseModel):
+    """Las funciones biológicas del formato de consulta externa del MINSA."""
+
+    apetito: str = Field(description="Cómo come. Vacío si no se habló.")
+    sed: str = Field(description="Vacío si no se habló.")
+    sueno: str = Field(description="Cómo duerme: hora, despertares. Vacío si no se habló.")
+    orina: str = Field(description="Incluye control de esfínteres. Vacío si no se habló.")
+    deposiciones: str = Field(description="Frecuencia, estreñimiento. Vacío si no se habló.")
+    estado_de_animo: str = Field(description="Ánimo, irritabilidad, crisis. Vacío si no se habló.")
+
+
+class SignosVitales(BaseModel):
+    """Funciones vitales y antropometría. null si no se dijo en la consulta."""
+
+    peso_kg: float | None = Field(description="Peso en kilos.")
+    talla_cm: float | None = Field(description="Talla en centímetros (1.28 m = 128).")
+    perimetro_cefalico_cm: float | None = Field(description="Perímetro cefálico en centímetros.")
+    temperatura_c: float | None = Field(description="Temperatura en grados Celsius.")
+    frecuencia_cardiaca: int | None = Field(description="Latidos por minuto.")
+    frecuencia_respiratoria: int | None = Field(description="Respiraciones por minuto.")
+
+
+def imc(signos: SignosVitales) -> float | None:
+    """Índice de masa corporal; lo calcula el código, no la IA (como en el SIHCE del MINSA)."""
+    if signos.peso_kg and signos.talla_cm:
+        return round(signos.peso_kg / (signos.talla_cm / 100) ** 2, 1)
+    return None
+
+
 class NotaAtencion(BaseModel):
-    """Lo que pasó en una atención (una consulta)."""
+    """Lo que pasó en una atención, en el orden del formato de consulta externa."""
 
     resumen: str = Field(description="Dos o tres oraciones con lo principal de la consulta.")
-    motivo: str = Field(description="Motivo de la consulta de hoy (primera vez, control, problema nuevo).")
+    motivo: str = Field(description="Motivo de consulta de hoy (primera vez, control, problema nuevo).")
+    tiempo_enfermedad: str = Field(description="Desde cuándo tiene el problema, p. ej. '2 años'. Vacío si no se dijo.")
     relato: list[str] = Field(description="Lo que contaron la familia, el colegio o las terapeutas.")
-    examen: list[str] = Field(description="Lo que observó o examinó el médico en la consulta.")
+    funciones_biologicas: FuncionesBiologicas
+    signos_vitales: SignosVitales
+    examen: list[str] = Field(description="Examen físico y neurológico: lo que observó o examinó el médico.")
     diagnosticos: list[Diagnostico] = Field(description="Diagnósticos o impresiones que dijo el médico hoy.")
-    plan: list[str] = Field(description="Indicaciones sin medicamentos: terapias, exámenes pedidos, recomendaciones.")
+    examenes_auxiliares: list[str] = Field(description="Exámenes pedidos: laboratorio, imágenes, EEG, audiometría, escalas.")
+    interconsultas: list[str] = Field(description="Interconsultas, derivaciones y terapias indicadas (lenguaje, ocupacional...).")
+    indicaciones: list[str] = Field(description="Indicaciones sin medicamentos para la familia y el colegio.")
     proximo_control: str = Field(description="Cuándo es el próximo control, como lo dijo el médico. Vacío si no se dijo.")
     proximo_control_semanas: int = Field(description="El próximo control en semanas (2 meses = 8). 0 si no se dijo.")
     por_confirmar: list[str] = Field(
@@ -101,11 +145,24 @@ class ResultadoAtencion(BaseModel):
     )
 
 
-def _clave(item) -> str:
+def _clave(item: Diagnostico | str) -> str:
     """Para no duplicar: un diagnóstico se reconoce por su código CIE-10 (o su texto)."""
-    if isinstance(item, dict):
-        return item.get("cie10") or item.get("descripcion", "").lower()
-    return str(item).lower()
+    if isinstance(item, Diagnostico):
+        return item.cie10 or item.descripcion.lower()
+    return item.lower()
+
+
+def _fusionar_diagnosticos(actuales: list[Diagnostico], nuevos: list[Diagnostico]) -> list[Diagnostico]:
+    """Agrega los diagnósticos nuevos. Si un presuntivo se confirma, pasa a definitivo."""
+    resultado = [d.model_copy() for d in actuales]
+    for nuevo in nuevos:
+        igual = next((d for d in resultado if _clave(d) == _clave(nuevo)), None)
+        if igual is None:
+            # En la historia solo hay definitivos o presuntivos ("repetitivo" es de la atención).
+            resultado.append(nuevo.model_copy(update={"tipo": "P" if nuevo.tipo == "P" else "D"}))
+        elif igual.tipo == "P" and nuevo.tipo != "P":
+            igual.tipo = "D"
+    return resultado
 
 
 def fusionar_historia(actual: HistoriaClinica, nueva: HistoriaClinica) -> HistoriaClinica:
@@ -114,17 +171,20 @@ def fusionar_historia(actual: HistoriaClinica, nueva: HistoriaClinica) -> Histor
     La IA solo propone lo nuevo; este código lo agrega. Así una respuesta mala
     del modelo nunca puede borrar antecedentes ya registrados.
     """
-    datos = actual.model_dump()
-    for campo, valor in nueva.model_dump().items():
-        if isinstance(valor, list):
-            existentes = {_clave(v) for v in datos[campo]}
-            datos[campo] += [v for v in valor if v and _clave(v) not in existentes]
-        elif valor and valor not in datos[campo]:
-            datos[campo] = f"{datos[campo]} {valor}".strip()
+    datos = {}
+    for campo in HistoriaClinica.model_fields:
+        viejo, nuevo = getattr(actual, campo), getattr(nueva, campo)
+        if campo == "diagnosticos":
+            datos[campo] = _fusionar_diagnosticos(viejo, nuevo)
+        elif isinstance(viejo, list):
+            existentes = {_clave(v) for v in viejo}
+            datos[campo] = viejo + [v for v in nuevo if v and _clave(v) not in existentes]
+        else:
+            datos[campo] = f"{viejo} {nuevo}".strip() if nuevo and nuevo not in viejo else viejo
     return HistoriaClinica(**datos)
 
 
 HISTORIA_VACIA = HistoriaClinica(
-    antecedentes_perinatales="", desarrollo_psicomotor="", antecedentes_personales=[],
+    antecedentes_perinatales="", desarrollo_psicomotor="", inmunizaciones="", antecedentes_personales=[],
     antecedentes_familiares=[], alergias=[], diagnosticos=[], terapias=[],
 )

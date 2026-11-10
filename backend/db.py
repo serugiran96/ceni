@@ -24,6 +24,7 @@ CARPETA_DATOS = Path(__file__).resolve().parent.parent / "data"
 RUTA_DB = CARPETA_DATOS / "ceni.db"
 RUTA_SEMILLA = CARPETA_DATOS / "semilla.json"
 
+VERSION_ESQUEMA = 2  # súbela cuando cambien las tablas o los esquemas: la base se vuelve a crear
 LIMITE_SEMANAL = 10  # transcripciones por paciente en los últimos 7 días
 ESTADOS_CITA = ["Programada", "Atendida", "No asistió"]
 
@@ -84,12 +85,18 @@ def _semilla() -> dict:
     return json.loads(RUTA_SEMILLA.read_text(encoding="utf-8"))
 
 
+def _version_guardada() -> int:
+    with conectar() as con:
+        return con.execute("PRAGMA user_version").fetchone()[0]
+
+
 def crear_base(desde_cero: bool = False) -> None:
-    """Crea las tablas y carga la semilla si la base está vacía."""
-    if desde_cero and RUTA_DB.exists():
+    """Crea las tablas y carga la semilla si la base está vacía o es de una versión anterior."""
+    if RUTA_DB.exists() and (desde_cero or _version_guardada() != VERSION_ESQUEMA):
         RUTA_DB.unlink()
     with conectar() as con:
         con.executescript(ESQUEMA_SQL)
+        con.execute(f"PRAGMA user_version = {VERSION_ESQUEMA}")
         if con.execute("SELECT COUNT(*) FROM pacientes").fetchone()[0] == 0:
             _cargar_semilla(con)
 
@@ -131,11 +138,16 @@ def _receta_json(receta: list[Medicamento]) -> str:
     return json.dumps([m.model_dump() for m in receta], ensure_ascii=False)
 
 
+def numero_hc(paciente_id: int) -> str:
+    """Número de historia clínica que se muestra, p. ej. 'HC-00012'."""
+    return f"HC-{paciente_id:05d}"
+
+
 def edad_texto(fecha_nacimiento: str, hoy: date | None = None) -> str:
     nac = date.fromisoformat(fecha_nacimiento)
     hoy = hoy or date.today()
     anios = hoy.year - nac.year - ((hoy.month, hoy.day) < (nac.month, nac.day))
-    return f"{anios} años"
+    return f"{anios} año" if anios == 1 else f"{anios} años"
 
 
 # --- Pacientes ----------------------------------------------------------------
@@ -144,7 +156,10 @@ def listar_pacientes(buscar: str = "") -> list[dict]:
     with conectar() as con:
         filas = con.execute(
             """
-            SELECT p.*, h.historia_json, COUNT(a.id) AS n_atenciones, MAX(a.fecha) AS ultima_atencion
+            SELECT p.*, h.historia_json, COUNT(a.id) AS n_atenciones, MAX(a.fecha) AS ultima_atencion,
+                   (SELECT c.fecha || ' ' || c.hora FROM citas c
+                    WHERE c.paciente_id = p.id AND c.estado = 'Programada' AND c.fecha >= date('now', 'localtime')
+                    ORDER BY c.fecha, c.hora LIMIT 1) AS proxima_cita
             FROM pacientes p
             JOIN historias h ON h.paciente_id = p.id
             LEFT JOIN atenciones a ON a.paciente_id = p.id
@@ -153,13 +168,17 @@ def listar_pacientes(buscar: str = "") -> list[dict]:
             """,
             (f"%{buscar.strip()}%",),
         ).fetchall()
-    pacientes = []
-    for f in filas:
-        p = dict(f)
-        p["edad"] = edad_texto(p["fecha_nacimiento"])
-        p["diagnosticos"] = HistoriaClinica.model_validate_json(p.pop("historia_json")).diagnosticos
-        pacientes.append(p)
-    return pacientes
+    return [_con_historia(dict(f)) for f in filas]
+
+
+def _con_historia(fila: dict) -> dict:
+    """Agrega edad, número de HC, diagnósticos y alergias a una fila que trae historia_json."""
+    historia = HistoriaClinica.model_validate_json(fila.pop("historia_json"))
+    fila["edad"] = edad_texto(fila["fecha_nacimiento"])
+    fila["hc"] = numero_hc(fila["paciente_id"] if "paciente_id" in fila else fila["id"])
+    fila["diagnosticos"] = historia.diagnosticos
+    fila["alergias"] = historia.alergias
+    return fila
 
 
 def obtener_paciente(paciente_id: int) -> dict:
@@ -167,6 +186,7 @@ def obtener_paciente(paciente_id: int) -> dict:
         fila = con.execute("SELECT * FROM pacientes WHERE id = ?", (paciente_id,)).fetchone()
     paciente = dict(fila)
     paciente["edad"] = edad_texto(paciente["fecha_nacimiento"])
+    paciente["hc"] = numero_hc(paciente["id"])
     return paciente
 
 
@@ -242,14 +262,15 @@ def guardar_atencion(
 # --- Agenda -----------------------------------------------------------------------
 
 def citas_entre(desde: date, hasta: date) -> list[dict]:
-    """Citas entre dos fechas (incluidas), con el nombre del paciente."""
+    """Citas entre dos fechas (incluidas), con el nombre, la edad y los diagnósticos del paciente."""
     with conectar() as con:
         filas = con.execute(
-            """SELECT c.*, p.nombre FROM citas c JOIN pacientes p ON p.id = c.paciente_id
+            """SELECT c.*, p.nombre, p.fecha_nacimiento, h.historia_json
+               FROM citas c JOIN pacientes p ON p.id = c.paciente_id JOIN historias h ON h.paciente_id = p.id
                WHERE c.fecha BETWEEN ? AND ? ORDER BY c.fecha, c.hora""",
             (desde.isoformat(), hasta.isoformat()),
         ).fetchall()
-    return [dict(f) for f in filas]
+    return [_con_historia(dict(f)) for f in filas]
 
 
 def obtener_cita(cita_id: int) -> dict | None:

@@ -18,6 +18,7 @@
       "historia": {
         "antecedentes_perinatales": "Nacido a término por cesárea, 3.2 kg, sin complicaciones.",
         "desarrollo_psicomotor": "Caminó a los 14 meses. Primeras palabras a los 2 años; a los 3 años usaba palabras sueltas.",
+        "inmunizaciones": "Completas para la edad según el carné.",
         "antecedentes_personales": [
           "Sin hospitalizaciones",
           "Audiometría normal (agosto de 2026)"
@@ -31,11 +32,13 @@
         "diagnosticos": [
           {
             "descripcion": "Trastorno del espectro autista (TEA), nivel 1 de apoyo",
-            "cie10": "F84.0"
+            "cie10": "F84.0",
+            "tipo": "D"
           },
           {
             "descripcion": "Insomnio de mantenimiento",
-            "cie10": "G47.0"
+            "cie10": "G47.0",
+            "tipo": "D"
           }
         ],
         "terapias": [
@@ -49,11 +52,28 @@
           "nota": {
             "resumen": "Primer control después del diagnóstico. El sueño es la queja principal; se inician terapias y melatonina.",
             "motivo": "Control después del diagnóstico de TEA",
+            "tiempo_enfermedad": "3 años",
             "relato": [
               "Se despierta 3 veces por noche",
               "Usa palabras sueltas y señala para pedir",
               "Crisis largas cuando cambian la ruta al nido"
             ],
+            "funciones_biologicas": {
+              "apetito": "Conservado",
+              "sed": "",
+              "sueno": "Se despierta 3 veces por noche",
+              "orina": "Usa pañal de noche",
+              "deposiciones": "Conservadas",
+              "estado_de_animo": "Crisis largas con los cambios de rutina"
+            },
+            "signos_vitales": {
+              "peso_kg": 17.0,
+              "talla_cm": 104.0,
+              "perimetro_cefalico_cm": 51.0,
+              "temperatura_c": 36.6,
+              "frecuencia_cardiaca": 102,
+              "frecuencia_respiratoria": 24
+            },
             "examen": [
               "Contacto visual breve",
               "Juego repetitivo con carros",
@@ -62,18 +82,24 @@
             "diagnosticos": [
               {
                 "descripcion": "TEA, nivel 1 de apoyo",
-                "cie10": "F84.0"
+                "cie10": "F84.0",
+                "tipo": "D"
               },
               {
                 "descripcion": "Insomnio de mantenimiento",
-                "cie10": "G47.0"
+                "cie10": "G47.0",
+                "tipo": "D"
               }
             ],
-            "plan": [
-              "Iniciar terapia de lenguaje 2 veces por semana",
-              "Iniciar terapia ocupacional 1 vez por semana",
-              "Rutina fija para dormir y sin pantallas una hora antes",
+            "examenes_auxiliares": [
               "Audiometría"
+            ],
+            "interconsultas": [
+              "Terapia de lenguaje, 2 veces por semana",
+              "Terapia ocupacional, 1 vez por semana"
+            ],
+            "indicaciones": [
+              "Rutina fija para dormir y sin pantallas una hora antes"
             ],
             "proximo_control": "En 2 meses",
             "proximo_control_semanas": 8,
@@ -87,6 +113,7 @@
               "dosis": "1 tableta",
               "frecuencia": "Cada noche, 30 minutos antes de dormir",
               "duracion": "2 meses",
+              "cantidad": "60 tabletas",
               "indicaciones": "Tomar con agua"
             }
           ]
@@ -96,11 +123,28 @@
           "nota": {
             "resumen": "Mejoría del sueño con melatonina y rutina. Empieza a combinar dos palabras. Audiometría normal.",
             "motivo": "Control",
+            "tiempo_enfermedad": "3 años",
             "relato": [
               "Se despierta 1 vez por noche",
               "Dice \"más agua\" y \"mamá ven\"",
               "Las crisis por cambios duran menos"
             ],
+            "funciones_biologicas": {
+              "apetito": "Conservado",
+              "sed": "",
+              "sueno": "Se despierta 1 vez por noche",
+              "orina": "",
+              "deposiciones": "Conservadas",
+              "estado_de_animo": "Crisis más cortas"
+            },
+            "signos_vitales": {
+              "peso_kg": 17.4,
+              "talla_cm": 105.5,
+              "perimetro_cefalico_cm": 51.2,
+              "temperatura_c": 36.5,
+              "frecuencia_cardiaca": 100,
+              "frecuencia_respiratoria": 24
+            },
             "examen": [
               "Responde a su nombre",
               "Mejor contacto visual durante el juego"
@@ -108,12 +152,16 @@
             "diagnosticos": [
               {
                 "descripcion": "TEA, nivel 1 de apoyo",
-                "cie10": "F84.0"
+                "cie10": "F84.0",
+                "tipo": "R"
               }
             ],
-            "plan": [
-              "Continuar terapias",
-              "Usar agenda visual con fotos para anticipar cambios"
+            "examenes_auxiliares": [],
+            "interconsultas": [
+              "Continuar terapia de lenguaje y ocupacional"
+            ],
+            "indicaciones": [
+              "Agenda visual con fotos para anticipar cambios"
             ],
             "proximo_control": "En 2 meses",
             "proximo_control_semanas": 8,
@@ -127,6 +175,7 @@
               "dosis": "1 tableta",
               "frecuencia": "Cada noche, 30 minutos antes de dormir",
               "duracion": "2 meses",
+              "cantidad": "60 tabletas",
               "indicaciones": ""
             }
           ]
@@ -136,11 +185,28 @@
           "nota": {
             "resumen": "Buen avance en comunicación y en tolerancia a cambios con la agenda visual. Duerme toda la noche casi todos los días.",
             "motivo": "Control",
+            "tiempo_enfermedad": "3 años",
             "relato": [
               "Arma frases de 2 a 3 palabras",
               "2 crisis en el mes",
               "Duerme toda la noche 5 de 7 días"
             ],
+            "funciones_biologicas": {
+              "apetito": "Conservado",
+              "sed": "",
+              "sueno": "Duerme toda la noche 5 de 7 días",
+              "orina": "Control diurno completo",
+              "deposiciones": "Conservadas",
+              "estado_de_animo": "2 crisis en el mes"
+            },
+            "signos_vitales": {
+              "peso_kg": 17.9,
+              "talla_cm": 107.0,
+              "perimetro_cefalico_cm": 51.4,
+              "temperatura_c": 36.7,
+              "frecuencia_cardiaca": 98,
+              "frecuencia_respiratoria": 22
+            },
             "examen": [
               "Juega por turnos con la médica",
               "Pide ayuda con palabras"
@@ -148,12 +214,16 @@
             "diagnosticos": [
               {
                 "descripcion": "TEA, nivel 1 de apoyo",
-                "cie10": "F84.0"
+                "cie10": "F84.0",
+                "tipo": "R"
               }
             ],
-            "plan": [
-              "Continuar terapias",
+            "examenes_auxiliares": [],
+            "interconsultas": [
               "Pedir informe de la terapeuta de lenguaje"
+            ],
+            "indicaciones": [
+              "Continuar la agenda visual y la rutina de sueño"
             ],
             "proximo_control": "En 1 mes",
             "proximo_control_semanas": 4,
@@ -167,6 +237,7 @@
               "dosis": "1 tableta",
               "frecuencia": "Cada noche, 30 minutos antes de dormir",
               "duracion": "1 mes",
+              "cantidad": "30 tabletas",
               "indicaciones": ""
             }
           ]
@@ -185,6 +256,7 @@
       "historia": {
         "antecedentes_perinatales": "Nacida a término, parto vaginal, sin complicaciones.",
         "desarrollo_psicomotor": "Hitos motores y de lenguaje dentro de lo esperado.",
+        "inmunizaciones": "Completas para la edad según el carné.",
         "antecedentes_personales": [
           "Sin enfermedades crónicas"
         ],
@@ -197,7 +269,8 @@
         "diagnosticos": [
           {
             "descripcion": "TDAH, presentación combinada",
-            "cie10": "F90.0"
+            "cie10": "F90.0",
+            "tipo": "D"
           }
         ],
         "terapias": [
@@ -211,24 +284,45 @@
           "nota": {
             "resumen": "Tras tres meses de manejo conductual con mejora parcial, se inicia metilfenidato.",
             "motivo": "Control; el colegio sigue reportando dificultades",
+            "tiempo_enfermedad": "2 años",
             "relato": [
               "La tutora reporta que termina 1 de cada 4 tareas",
               "En casa necesita recordatorios constantes"
             ],
+            "funciones_biologicas": {
+              "apetito": "Conservado",
+              "sed": "",
+              "sueno": "Conservado",
+              "orina": "",
+              "deposiciones": "",
+              "estado_de_animo": "Se frustra con las tareas"
+            },
+            "signos_vitales": {
+              "peso_kg": 25.0,
+              "talla_cm": 126.0,
+              "perimetro_cefalico_cm": null,
+              "temperatura_c": 36.5,
+              "frecuencia_cardiaca": 88,
+              "frecuencia_respiratoria": 20
+            },
             "examen": [
-              "Inquieta, se levanta varias veces",
-              "Peso 25 kg; presión arterial normal"
+              "Inquieta, se levanta varias veces"
             ],
             "diagnosticos": [
               {
                 "descripcion": "TDAH, presentación combinada",
-                "cie10": "F90.0"
+                "cie10": "F90.0",
+                "tipo": "D"
               }
             ],
-            "plan": [
-              "Continuar terapia de aprendizaje y pautas para padres",
-              "Cuadro de rutina con dibujos",
-              "Escala de conducta de la tutora para el próximo control"
+            "examenes_auxiliares": [
+              "Escala de conducta (Conners) llenada por la tutora"
+            ],
+            "interconsultas": [
+              "Continuar terapia de aprendizaje y pautas para padres"
+            ],
+            "indicaciones": [
+              "Cuadro de rutina con dibujos"
             ],
             "proximo_control": "En 6 semanas",
             "proximo_control_semanas": 6,
@@ -242,6 +336,7 @@
               "dosis": "1 tableta",
               "frecuencia": "Cada mañana con el desayuno, solo días de colegio",
               "duracion": "6 semanas",
+              "cantidad": "30 tabletas",
               "indicaciones": "No partir ni masticar la tableta"
             }
           ]
@@ -251,22 +346,43 @@
           "nota": {
             "resumen": "El colegio reporta una mejora clara. Buena tolerancia a la medicación; el apetito se recuperó.",
             "motivo": "Control",
+            "tiempo_enfermedad": "2 años",
             "relato": [
               "La tutora la ve más atenta y con menos interrupciones",
               "Termina 3 de cada 4 tareas",
               "Los fines de semana cuesta seguir la rutina"
             ],
+            "funciones_biologicas": {
+              "apetito": "Disminuido al mediodía las primeras semanas; ya se recuperó",
+              "sed": "",
+              "sueno": "Conservado",
+              "orina": "",
+              "deposiciones": "",
+              "estado_de_animo": "Más tranquila"
+            },
+            "signos_vitales": {
+              "peso_kg": 25.5,
+              "talla_cm": 128.0,
+              "perimetro_cefalico_cm": null,
+              "temperatura_c": 36.4,
+              "frecuencia_cardiaca": 90,
+              "frecuencia_respiratoria": 20
+            },
             "examen": [
-              "Atenta y conversadora",
-              "Peso 25.5 kg"
+              "Atenta y conversadora"
             ],
             "diagnosticos": [
               {
                 "descripcion": "TDAH, presentación combinada",
-                "cie10": "F90.0"
+                "cie10": "F90.0",
+                "tipo": "R"
               }
             ],
-            "plan": [
+            "examenes_auxiliares": [],
+            "interconsultas": [
+              "Continuar terapia de aprendizaje"
+            ],
+            "indicaciones": [
               "Mantener la rutina también el fin de semana"
             ],
             "proximo_control": "En 1 mes",
@@ -281,6 +397,7 @@
               "dosis": "1 tableta",
               "frecuencia": "Cada mañana con el desayuno, solo días de colegio",
               "duracion": "1 mes",
+              "cantidad": "20 tabletas",
               "indicaciones": "No partir ni masticar la tableta"
             }
           ]
@@ -299,6 +416,7 @@
       "historia": {
         "antecedentes_perinatales": "Prematuro de 35 semanas, 2.4 kg; 5 días en incubadora.",
         "desarrollo_psicomotor": "Caminó a los 18 meses. No dice palabras; se comunica llevando al adulto de la mano.",
+        "inmunizaciones": "Completas para la edad según el carné.",
         "antecedentes_personales": [
           "Estreñimiento frecuente"
         ],
@@ -311,11 +429,13 @@
         "diagnosticos": [
           {
             "descripcion": "TEA, nivel 2 de apoyo",
-            "cie10": "F84.0"
+            "cie10": "F84.0",
+            "tipo": "D"
           },
           {
             "descripcion": "Selectividad alimentaria",
-            "cie10": "F98.2"
+            "cie10": "F98.2",
+            "tipo": "D"
           }
         ],
         "terapias": [
@@ -329,10 +449,27 @@
           "nota": {
             "resumen": "Crisis frecuentes por ruido y alimentación muy selectiva. Se inician terapias.",
             "motivo": "Control",
+            "tiempo_enfermedad": "2 años",
             "relato": [
               "Crisis casi todos los días con ruidos fuertes",
               "Solo come papillas y pan"
             ],
+            "funciones_biologicas": {
+              "apetito": "Muy selectivo: solo papillas y pan",
+              "sed": "",
+              "sueno": "Conservado",
+              "orina": "Usa pañal",
+              "deposiciones": "Estreñimiento, cada 3 días",
+              "estado_de_animo": "Crisis casi diarias con ruidos fuertes"
+            },
+            "signos_vitales": {
+              "peso_kg": 14.8,
+              "talla_cm": 98.0,
+              "perimetro_cefalico_cm": 49.8,
+              "temperatura_c": 36.6,
+              "frecuencia_cardiaca": 110,
+              "frecuencia_respiratoria": 26
+            },
             "examen": [
               "Se tapa los oídos en la sala de espera",
               "No responde a su nombre"
@@ -340,18 +477,24 @@
             "diagnosticos": [
               {
                 "descripcion": "TEA, nivel 2 de apoyo",
-                "cie10": "F84.0"
+                "cie10": "F84.0",
+                "tipo": "D"
               },
               {
                 "descripcion": "Selectividad alimentaria",
-                "cie10": "F98.2"
+                "cie10": "F98.2",
+                "tipo": "D"
               }
             ],
-            "plan": [
-              "Terapia ocupacional sensorial 2 veces por semana",
-              "Terapia de lenguaje con pictogramas",
-              "Orejeras en lugares con ruido",
-              "Evaluación de audición"
+            "examenes_auxiliares": [
+              "Evaluación de la audición (potenciales evocados)"
+            ],
+            "interconsultas": [
+              "Terapia ocupacional sensorial, 2 veces por semana",
+              "Terapia de lenguaje con pictogramas"
+            ],
+            "indicaciones": [
+              "Orejeras en lugares con ruido"
             ],
             "proximo_control": "En 2 meses",
             "proximo_control_semanas": 8,
@@ -364,11 +507,28 @@
           "nota": {
             "resumen": "Avance en comunicación con pictogramas y en alimentación. Audición normal.",
             "motivo": "Control",
+            "tiempo_enfermedad": "2 años",
             "relato": [
               "Usa 6 pictogramas en casa",
               "Ya come arroz y plátano",
               "Una crisis fuerte en un cumpleaños"
             ],
+            "funciones_biologicas": {
+              "apetito": "Ya come arroz y plátano",
+              "sed": "",
+              "sueno": "Conservado",
+              "orina": "Usa pañal",
+              "deposiciones": "Cada 2 días",
+              "estado_de_animo": "Una crisis fuerte en un cumpleaños"
+            },
+            "signos_vitales": {
+              "peso_kg": 15.6,
+              "talla_cm": 100.5,
+              "perimetro_cefalico_cm": 50.2,
+              "temperatura_c": 36.5,
+              "frecuencia_cardiaca": 106,
+              "frecuencia_respiratoria": 24
+            },
             "examen": [
               "Entrega pictogramas para pedir juguetes",
               "Tolera la sala de espera con orejeras"
@@ -376,11 +536,15 @@
             "diagnosticos": [
               {
                 "descripcion": "TEA, nivel 2 de apoyo",
-                "cie10": "F84.0"
+                "cie10": "F84.0",
+                "tipo": "R"
               }
             ],
-            "plan": [
-              "Continuar terapias",
+            "examenes_auxiliares": [],
+            "interconsultas": [
+              "Continuar terapia ocupacional y de lenguaje"
+            ],
+            "indicaciones": [
               "Anticipar con fotos las salidas a lugares nuevos"
             ],
             "proximo_control": "En 2 meses",
@@ -403,6 +567,7 @@
       "historia": {
         "antecedentes_perinatales": "Nacida a término, sin complicaciones.",
         "desarrollo_psicomotor": "Desarrollo dentro de lo esperado.",
+        "inmunizaciones": "Completas para la edad según el carné.",
         "antecedentes_personales": [
           "Rinitis alérgica"
         ],
@@ -415,7 +580,8 @@
         "diagnosticos": [
           {
             "descripcion": "TDAH, presentación inatenta",
-            "cie10": "F98.8"
+            "cie10": "F98.8",
+            "tipo": "D"
           }
         ],
         "terapias": [
@@ -428,22 +594,43 @@
           "nota": {
             "resumen": "Mejora con los ajustes en el colegio y la rutina de sueño. Por ahora sin medicación.",
             "motivo": "Control",
+            "tiempo_enfermedad": "1 año",
             "relato": [
               "La tutora la ve más atenta en las primeras horas",
               "Anota sus tareas cuando se lo recuerdan",
               "Se duerme a las 9 p. m."
             ],
+            "funciones_biologicas": {
+              "apetito": "Conservado",
+              "sed": "",
+              "sueno": "Se duerme a las 9 p. m.",
+              "orina": "",
+              "deposiciones": "",
+              "estado_de_animo": "Conservado"
+            },
+            "signos_vitales": {
+              "peso_kg": 22.0,
+              "talla_cm": 121.0,
+              "perimetro_cefalico_cm": null,
+              "temperatura_c": 36.6,
+              "frecuencia_cardiaca": 92,
+              "frecuencia_respiratoria": 20
+            },
             "examen": [
               "Más participativa en la consulta"
             ],
             "diagnosticos": [
               {
                 "descripcion": "TDAH, presentación inatenta",
-                "cie10": "F98.8"
+                "cie10": "F98.8",
+                "tipo": "D"
               }
             ],
-            "plan": [
-              "Continuar terapia de aprendizaje",
+            "examenes_auxiliares": [],
+            "interconsultas": [
+              "Continuar terapia de aprendizaje"
+            ],
+            "indicaciones": [
               "Revisar la agenda juntas cada noche",
               "Revaluar medicación en el próximo control"
             ],
@@ -467,6 +654,7 @@
       "historia": {
         "antecedentes_perinatales": "Nacido a término, sin complicaciones.",
         "desarrollo_psicomotor": "Habló a tiempo; juego solitario desde pequeño.",
+        "inmunizaciones": "Completas; falta el refuerzo de los 9 años.",
         "antecedentes_personales": [
           "Sin hospitalizaciones"
         ],
@@ -479,11 +667,13 @@
         "diagnosticos": [
           {
             "descripcion": "TEA, nivel 1 de apoyo",
-            "cie10": "F84.0"
+            "cie10": "F84.0",
+            "tipo": "D"
           },
           {
             "descripcion": "TDAH, presentación combinada",
-            "cie10": "F90.0"
+            "cie10": "F90.0",
+            "tipo": "D"
           }
         ],
         "terapias": [
@@ -497,10 +687,27 @@
           "nota": {
             "resumen": "Primeros avances en el recreo gracias al taller; las tareas siguen siendo difíciles.",
             "motivo": "Control",
+            "tiempo_enfermedad": "4 años",
             "relato": [
               "Juega ajedrez con un compañero en el recreo",
               "Acepta cambios si se le avisan"
             ],
+            "funciones_biologicas": {
+              "apetito": "Conservado",
+              "sed": "",
+              "sueno": "Conservado",
+              "orina": "",
+              "deposiciones": "",
+              "estado_de_animo": "Ansioso con los cambios si no se le avisan"
+            },
+            "signos_vitales": {
+              "peso_kg": 28.5,
+              "talla_cm": 132.0,
+              "perimetro_cefalico_cm": null,
+              "temperatura_c": 36.5,
+              "frecuencia_cardiaca": 86,
+              "frecuencia_respiratoria": 20
+            },
             "examen": [
               "Mejor reciprocidad en la conversación",
               "Inquieto, mueve las piernas"
@@ -508,15 +715,20 @@
             "diagnosticos": [
               {
                 "descripcion": "TEA, nivel 1 de apoyo",
-                "cie10": "F84.0"
+                "cie10": "F84.0",
+                "tipo": "D"
               },
               {
                 "descripcion": "TDAH, presentación combinada",
-                "cie10": "F90.0"
+                "cie10": "F90.0",
+                "tipo": "D"
               }
             ],
-            "plan": [
-              "Continuar taller y terapia de aprendizaje",
+            "examenes_auxiliares": [],
+            "interconsultas": [
+              "Continuar el taller de habilidades sociales y la terapia de aprendizaje"
+            ],
+            "indicaciones": [
               "Temporizador visual para las pausas"
             ],
             "proximo_control": "En 2 meses",
@@ -530,26 +742,47 @@
           "nota": {
             "resumen": "Mejora en las tareas con temporizador y pausas. Tiene dos amigos en el salón.",
             "motivo": "Control",
+            "tiempo_enfermedad": "4 años",
             "relato": [
               "Termina las tareas con pausas",
               "Tiene dos amigos en el salón"
             ],
+            "funciones_biologicas": {
+              "apetito": "Conservado",
+              "sed": "",
+              "sueno": "Conservado",
+              "orina": "",
+              "deposiciones": "",
+              "estado_de_animo": "Contento; tiene dos amigos"
+            },
+            "signos_vitales": {
+              "peso_kg": 29.2,
+              "talla_cm": 134.0,
+              "perimetro_cefalico_cm": null,
+              "temperatura_c": 36.6,
+              "frecuencia_cardiaca": 84,
+              "frecuencia_respiratoria": 18
+            },
             "examen": [
               "Más tranquilo; espera su turno para hablar"
             ],
             "diagnosticos": [
               {
                 "descripcion": "TEA, nivel 1 de apoyo",
-                "cie10": "F84.0"
+                "cie10": "F84.0",
+                "tipo": "R"
               },
               {
                 "descripcion": "TDAH, presentación combinada",
-                "cie10": "F90.0"
+                "cie10": "F90.0",
+                "tipo": "R"
               }
             ],
-            "plan": [
-              "Continuar taller y terapia de aprendizaje"
+            "examenes_auxiliares": [],
+            "interconsultas": [
+              "Continuar el taller de habilidades sociales y la terapia de aprendizaje"
             ],
+            "indicaciones": [],
             "proximo_control": "En 3 meses",
             "proximo_control_semanas": 12,
             "por_confirmar": []

@@ -1,16 +1,21 @@
 """Punto de entrada de Ceni: `streamlit run streamlit_app.py`.
 
-Prepara la clave y la base de datos, dibuja la barra lateral y decide qué
-página mostrar (agenda, pacientes o ficha).
+Prepara la clave y la base de datos, aplica el estilo, dibuja la barra
+lateral (logo, menú y médico) y decide qué página mostrar.
 """
 
 import os
+from pathlib import Path
 
 import streamlit as st
 
+from app import estilo
 from backend import db
 
-st.set_page_config(page_title="Ceni", page_icon=":material/graphic_eq:", layout="wide")
+ASSETS = Path(__file__).resolve().parent / "assets"
+
+st.set_page_config(page_title="Ceni", page_icon=str(ASSETS / "icono.png"), layout="wide", initial_sidebar_state="expanded")
+estilo.aplicar()
 
 # En Streamlit Cloud la clave vive en st.secrets. La copiamos a una variable de
 # entorno para que el código de ai/ funcione igual en la laptop y en la nube.
@@ -30,20 +35,32 @@ def iniciar_base() -> bool:
 
 iniciar_base()
 
-with st.sidebar:
-    st.markdown("## Ceni")
-    st.caption("El médico graba la consulta. Ceni arma el resumen, la historia clínica y la receta para que el médico los revise.")
-    st.info("Ceni documenta: no diagnostica ni receta por su cuenta. Todos los pacientes de este demo son inventados.", icon=":material/info:")
-    if st.button("Restaurar datos del demo", icon=":material/restart_alt:"):
-        db.crear_base(desde_cero=True)
-        st.session_state.clear()
-        st.rerun()
+# Para volver a los datos del demo antes de presentar: abrir la app con ?reiniciar
+if "reiniciar" in st.query_params:
+    db.crear_base(desde_cero=True)
+    st.session_state.clear()
+    st.query_params.clear()
 
-pagina = st.navigation(
-    [
-        st.Page("app/agenda.py", title="Agenda", icon=":material/calendar_month:", default=True),
-        st.Page("app/pacientes.py", title="Pacientes", icon=":material/groups:"),
-        st.Page("app/ficha.py", title="Ficha del paciente", icon=":material/folder_shared:"),
-    ]
-)
+paginas = [
+    st.Page("app/agenda.py", title="Agenda", icon=":material/calendar_month:", default=True),
+    st.Page("app/pacientes.py", title="Pacientes", icon=":material/groups:"),
+    st.Page("app/ficha.py", title="Ficha del paciente", icon=":material/folder_shared:"),
+]
+pagina = st.navigation(paginas, position="hidden")  # el menú lo dibujamos abajo, debajo del logo
+
+with st.sidebar:
+    st.image(str(ASSETS / "logo.png"), width=210)
+    st.write("")
+    for p in paginas:
+        st.page_link(p, width="stretch")
+    st.write("")
+    medico = db.medico()
+    nombre = medico["nombre"].split()
+    estilo.html(
+        '<div class="ceni-medico">'
+        f'<div class="ceni-avatar" style="background:#4F7487;color:#fff">{nombre[1][0]}{nombre[-1][0]}</div>'
+        f'<div><div class="ceni-nombre" style="font-size:.95rem">{medico["nombre"]}</div>'
+        f'<div class="ceni-meta">{medico["especialidad"]}</div></div></div>'
+    )
+
 pagina.run()
