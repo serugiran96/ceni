@@ -74,7 +74,7 @@ Antes de cada paciente, Ceni muestra lo que el médico necesita recordar: qué p
 
 ## 5. Why now
 
-- **Transcribir en español ya es barato y bueno.** Whisper salió en 2022 y su API en 2023. Hoy transcribir una consulta de 20 minutos cuesta unos US$ 0.12.
+- **Transcribir en español ya es barato y bueno.** Whisper salió en 2022 y su API en 2023. Hoy transcribir una consulta de 20 minutos con Whisper cuesta poco más de un centavo de dólar (US$ 0.013 en Groq).
 - **La IA ya puede llenar un formulario, no solo escribir texto.** Desde agosto de 2024, las salidas estructuradas de OpenAI garantizan que la respuesta tenga exactamente los campos del esquema. Por eso la nota cae en los campos de la historia clínica y no en un párrafo suelto.
 - **Los modelos pequeños cuestan menos de un centavo por consulta.** gpt-4.1-mini (2025) arma la nota, la receta y los datos nuevos por menos de US$ 0.01.
 
@@ -89,7 +89,7 @@ Antes de cada paciente, Ceni muestra lo que el médico necesita recordar: qué p
 ```bash
 uv venv --python 3.12 .venv
 uv pip install --python .venv/bin/python -r requirements.txt
-cp .env.example .env   # y pega tu OPENAI_API_KEY dentro
+cp .env.example .env   # y pega tu OPENAI_API_KEY y tu GROQ_API_KEY dentro
 .venv/bin/streamlit run streamlit_app.py
 ```
 
@@ -109,7 +109,7 @@ Todos los datos son inventados. En las capturas 2 y 3 se usó un borrador de pru
 
 ```mermaid
 flowchart LR
-    A["Médico graba la consulta<br/>con permiso de la familia"] -->|audio| B["Whisper<br/>ai/transcribir.py"]
+    A["Médico graba la consulta<br/>con permiso de la familia"] -->|audio| B["Whisper large-v3-turbo en Groq<br/>ai/transcribir.py"]
     B -->|transcripción| C["gpt-4.1-mini con salida estructurada<br/>ai/generar.py · ai/esquemas.py"]
     H[("Historia clínica actual")] --> C
     C -->|"nota + receta + datos nuevos"| D["Borrador en pantalla<br/>app/ficha.py"]
@@ -132,7 +132,7 @@ flowchart LR
 
 | Pieza | Qué usamos | Por qué |
 |---|---|---|
-| Voz a texto | **whisper-1** (OpenAI) | Es buena en español y cuesta US$ 0.006 por minuto. Le pasamos los nombres del paciente y de sus medicamentos para que los escriba bien. Si la consulta es larga, el audio se parte en trozos de 10 minutos que se transcriben a la vez. |
+| Voz a texto | **Whisper large-v3-turbo** en Groq (respaldo: **whisper-1** de OpenAI) | Es Whisper, con un costo de US$ 0.04 por hora de audio: unas 9 veces menos que whisper-1. OpenAI dice que el turbo rinde parecido a large-v2 en la mayoría de idiomas. Le pasamos los nombres del paciente y de sus medicamentos para que los escriba bien. Si Groq falla, la consulta se transcribe con whisper-1 y no se pierde. |
 | De texto a datos | **gpt-4.1-mini** con salidas estructuradas (`chat.completions.parse` + Pydantic) | Es rápido y barato, y respeta el esquema. Usa temperatura 0.2 para ser fiel a lo dicho y no inventar. Se cambia con `OPENAI_MODEL` sin tocar el código. |
 | Reglas de la receta | Python, sin IA | Las alertas de psicotrópicos y alergias deben ser fijas y explicables. |
 | Interfaz | Streamlit | Es una sola app en Python y se despliega gratis en Streamlit Community Cloud. |
@@ -141,48 +141,57 @@ flowchart LR
 
 **Privacidad y seguridad:**
 - El audio no se guarda. Antes de grabar, la familia tiene que dar su permiso, y queda registrada la hora.
-- La clave de OpenAI va en `.env` en la laptop y en Secrets en la nube. Nunca se sube al repo.
+- Las claves de OpenAI y Groq van en `.env` en la laptop y en Secrets en la nube. Nunca se suben al repo.
 - Hay dos límites para cuidar el saldo de la API: 10 transcripciones por paciente cada 7 días y 20 usos de IA por visitante de la URL pública.
 
 ## 7. Modelo de negocio
 
-> **Pendiente (lo escribe Melina):** quién paga (el médico, la clínica o el centro) y el precio concreto al mes.
+**Quién paga.** El profesional, o el centro por sus profesionales («si el consultorio lo paga, mejor todavía», entrevista 1).
 
-**Cuánto nos cuesta cada usuario.** Es una estimación hecha con el tamaño real del prompt y del esquema que están en el código. Se ajustará con el panel de uso de OpenAI después de las primeras consultas reales.
+**Cuánto: se paga por uso, con un tope al mes.** Precios con IGV incluido:
+- **S/ 0.50 por consulta grabada.**
+- **S/ 0.25 por dictado corto** (menos de 5 minutos), como el del odontólogo al terminar un procedimiento.
+- **Tope de S/ 99 al mes:** pasado el tope, el resto del mes no se cobra.
 
-| Supuesto | Valor |
-|---|---|
-| Duración de una consulta | 20 minutos |
-| Consultas por médico | 12 al día, 22 días al mes, unas 264 al mes (como en la entrevista 1) |
-| Entrada al LLM por consulta | unos 8,000 tokens: instrucciones, esquema, historia y transcripción |
-| Salida del LLM por consulta | unos 1,500 tokens: nota, receta y datos nuevos |
+El profesional paga solo lo que usa y sabe de antemano lo máximo que va a pagar. El tope sale de lo que dijo la entrevista 1, que pagaría «unos 80 o 100 soles». Así quedan los tres perfiles de las entrevistas:
 
-| Costo | Por consulta | Por médico al mes |
-|---|---:|---:|
-| Whisper: 20 min × US$ 0.006 | US$ 0.120 | US$ 31.7 |
-| gpt-4.1-mini, entrada: 8,000 × US$ 0.40 por millón | US$ 0.003 | US$ 0.8 |
-| gpt-4.1-mini, salida: 1,500 × US$ 1.60 por millón | US$ 0.002 | US$ 0.6 |
-| **Total de IA** | **≈ US$ 0.13** | **≈ US$ 33** |
-| Servidor | Streamlit Community Cloud es gratis para el demo. En producción, un servidor pequeño de US$ 10 a 25 al mes se reparte entre todos los médicos. | — |
+| Perfil (entrevista) | Uso al mes | Pagaría con esta tarifa | Dijo que pagaría |
+|---|---|---:|---:|
+| Pediatría (1) | 264 consultas de 20 min | S/ 99 (llega al tope) | S/ 80 a 100 |
+| Neuropediatría privada (3) | 132 consultas de 30 min | S/ 66 | S/ 120 a 150 |
+| Odontología (2) | 176 dictados de 2 min | S/ 44 | S/ 40 a 50 |
 
-- **El 95% del costo es la transcripción.** Si se cambia a `gpt-4o-mini-transcribe` (US$ 0.003 por minuto), el costo baja a unos US$ 0.07 por consulta, unos US$ 17 por médico al mes.
-**Datos para decidir el precio.** Se compara el costo de IA de cada perfil de las entrevistas con lo que dijo que pagaría. El tipo de cambio de referencia es S/ 3.75 por dólar.
+**Cuánto nos cuesta cada consulta.** Cada consulta usa una transcripción y una llamada al LLM. Es una estimación hecha con el tamaño real del prompt y del esquema que están en el código.
 
-| Perfil (entrevista) | Uso al mes | Costo de IA con whisper-1 | Con gpt-4o-mini-transcribe | Pagaría |
-|---|---|---:|---:|---:|
-| Pediatría (1): 12 consultas de 20 min al día | 5,280 min de audio | ≈ S/ 124 | ≈ S/ 65 | S/ 80 a 100 |
-| Neuropediatría privada (3): 6 consultas de 30 min al día | 3,960 min de audio | ≈ S/ 92 | ≈ S/ 47 | S/ 120 a 150 |
-| Odontología (2): dictado de 2 min al terminar, 8 pacientes al día | 352 min de audio | ≈ S/ 12 | ≈ S/ 8 | S/ 40 a 50 |
+| Costo de una consulta de 20 minutos | Cálculo | US$ |
+|---|---|---:|
+| Transcripción con Whisper large-v3-turbo en Groq | 20 min × US$ 0.04 por hora | 0.013 |
+| gpt-4.1-mini, entrada | ~8,150 tokens × US$ 0.40 por millón | 0.003 |
+| gpt-4.1-mini, salida | ~1,500 tokens × US$ 1.60 por millón | 0.002 |
+| **Total de IA** | | **≈ 0.019 (S/ 0.07)** |
 
-Con whisper-1, el plan de pediatría pierde plata. El de neuropediatría y el de dictado dejan margen. Por eso el precio debería ir por perfil o por minutos, y conviene cambiar a un modelo de transcripción más barato.
+Con whisper-1 de OpenAI la misma consulta costaba US$ 0.126 (S/ 0.47): la transcripción era el 95% del costo. Por eso Ceni transcribe en Groq, con el mismo Whisper, y deja whisper-1 solo como respaldo.
 
-- **Las cuentas cambian si cambian los precios.** Son precios de lista de OpenAI de noviembre de 2026. Algunas fuentes dicen que whisper-1 se retirará de la API en 2027: hay que revisar la página de deprecaciones de OpenAI.
+**Margen de contribución por profesional al mes:** lo que paga, menos IGV, comisión de cobro e IA.
+
+| Perfil | Paga | Ingreso neto (sin IGV ni comisión de 4%) | Costo de IA | Margen de contribución |
+|---|---:|---:|---:|---:|
+| Pediatría | S/ 99 | S/ 79.9 | S/ 18.8 | **S/ 61.1 (76%)** |
+| Neuropediatría privada | S/ 66 | S/ 53.3 | S/ 13.2 | **S/ 40.2 (75%)** |
+| Odontología, dictado | S/ 44 | S/ 35.5 | S/ 3.6 | **S/ 32.0 (90%)** |
+
+- **Costos fijos:** con ese margen se pagan el servidor, la base de datos con respaldo cifrado y el dominio. Son unos US$ 38 al mes (estimado): con 10 profesionales salen a unos S/ 14 por profesional. Para el demo, Streamlit Community Cloud es gratis.
+- **Supuestos:**
+  - 22 días de atención al mes y unos 225 tokens por minuto de conversación;
+  - tipo de cambio de S/ 3.75;
+  - comisión de cobro de 4% (cambia según la pasarela de pago);
+  - precios de lista de noviembre de 2026, de fuentes secundarias.
 
 ## 8. Herramientas del curso
 
 | Herramienta | Sesión | Archivos | Por qué esta |
 |---|---|---|---|
-| **De la voz al texto con Whisper** | 13 | [`ai/transcribir.py`](ai/transcribir.py) | Lo que el médico necesita documentar está en una conversación. Mientras atiende a un niño no puede escribir, y dictar después le quita el mismo tiempo. Grabar la consulta no cambia su forma de trabajar. |
+| **De la voz al texto con Whisper** (large-v3-turbo en Groq) | 13 | [`ai/transcribir.py`](ai/transcribir.py), [`ai/cliente.py`](ai/cliente.py) | Lo que el médico necesita documentar está en una conversación. Mientras atiende a un niño no puede escribir, y dictar después le quita el mismo tiempo. Grabar la consulta no cambia su forma de trabajar. |
 | **LLMs con salidas estructuradas** | 08 | [`ai/generar.py`](ai/generar.py), [`ai/esquemas.py`](ai/esquemas.py), [`ai/prompts.py`](ai/prompts.py) | Una historia clínica no es un resumen: son campos (diagnósticos CIE-10, signos vitales, medicamentos con dosis). El esquema obliga al modelo a devolver esos campos. Pydantic los valida y `fusionar_historia` (en `esquemas.py`) agrega lo nuevo sin borrar lo anterior. |
 
 ## 9. Qué hizo el agente

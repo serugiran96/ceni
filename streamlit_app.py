@@ -26,7 +26,7 @@ estilo.aplicar()
 # En Streamlit Cloud la clave vive en st.secrets. La copiamos a una variable de
 # entorno para que el código de ai/ funcione igual en la laptop y en la nube.
 try:
-    for nombre in ("OPENAI_API_KEY", "OPENAI_MODEL"):
+    for nombre in ("OPENAI_API_KEY", "GROQ_API_KEY", "OPENAI_MODEL"):
         if nombre in st.secrets:
             os.environ[nombre] = st.secrets[nombre]
 except Exception:  # en la laptop no hay secrets.toml: se usa el .env

@@ -237,7 +237,8 @@ with nueva_tab:
                             f"Diagnósticos: {', '.join(d.descripcion for d in historia.diagnosticos)}. "
                             f"{medico['vocabulario']}"
                         )
-                        texto = transcribir(audio, nombre_archivo, vocabulario)
+                        texto, quien = transcribir(audio, nombre_archivo, vocabulario)
+                        st.write(f"Transcrita con Whisper en {quien}.")
                     else:
                         texto = escrito.strip()
                     st.write("Armando la nota, la receta y la historia clínica…")

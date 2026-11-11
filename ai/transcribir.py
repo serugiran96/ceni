@@ -1,4 +1,4 @@
-"""Voz a texto con Whisper (API de OpenAI).
+"""Voz a texto con Whisper: primero en Groq y, si no se puede, en OpenAI.
 
 Una consulta completa puede durar 30 minutos o más, y la API acepta archivos de
 hasta 25 MB (unos 13 minutos en el WAV que graba el navegador). Por eso, si el
@@ -10,23 +10,42 @@ import io
 import wave
 from concurrent.futures import ThreadPoolExecutor
 
-from ai.cliente import MODELO_TRANSCRIPCION, cliente
+from ai.cliente import TRANSCRIPCION_GROQ, TRANSCRIPCION_OPENAI, cliente, cliente_groq, hay_groq
 
 LIMITE_API_MB = 24  # la API acepta hasta 25 MB por archivo; dejamos margen
 MINUTOS_POR_PARTE = 10
 MAX_MINUTOS = 60  # una consulta más larga que esto probablemente es un error
 
 
-def _whisper(audio: bytes, nombre_archivo: str, vocabulario: str) -> str:
+PROVEEDORES = {  # nombre que se muestra: (cliente, modelo, largo máximo del vocabulario)
+    "Groq": (cliente_groq, TRANSCRIPCION_GROQ, 500),  # Groq acepta un vocabulario más corto
+    "OpenAI": (cliente, TRANSCRIPCION_OPENAI, 800),
+}
+
+
+def _pedir(proveedor: str, audio: bytes, nombre_archivo: str, vocabulario: str) -> str:
+    crear_cliente, modelo, largo = PROVEEDORES[proveedor]
     archivo = io.BytesIO(audio)
-    archivo.name = nombre_archivo  # OpenAI usa la extensión para saber el formato
-    respuesta = cliente().audio.transcriptions.create(
-        model=MODELO_TRANSCRIPCION,
+    archivo.name = nombre_archivo  # la API usa la extensión para saber el formato
+    respuesta = crear_cliente().audio.transcriptions.create(
+        model=modelo,
         file=archivo,
         language="es",
-        prompt=vocabulario[:800],  # nombres y términos para que los escriba bien
+        prompt=vocabulario[:largo],  # nombres y términos para que los escriba bien
     )
     return respuesta.text.strip()
+
+
+def _whisper(audio: bytes, nombre_archivo: str, vocabulario: str, proveedor: str | None) -> tuple[str, str]:
+    """Transcribe un trozo. Sin proveedor fijo: Groq y, si no hay clave o falla, OpenAI."""
+    if proveedor:  # para comparar proveedores en la evaluación
+        return _pedir(proveedor, audio, nombre_archivo, vocabulario), proveedor
+    if hay_groq():
+        try:
+            return _pedir("Groq", audio, nombre_archivo, vocabulario), "Groq"
+        except Exception:  # Groq caído, límite de uso o clave inválida: la consulta no se pierde
+            pass
+    return _pedir("OpenAI", audio, nombre_archivo, vocabulario), "OpenAI"
 
 
 def _partir_wav(audio: bytes) -> list[bytes]:
@@ -47,8 +66,8 @@ def _partir_wav(audio: bytes) -> list[bytes]:
     return partes
 
 
-def transcribir(audio: bytes, nombre_archivo: str, vocabulario: str = "") -> str:
-    """Devuelve el texto de un audio en español."""
+def transcribir(audio: bytes, nombre_archivo: str, vocabulario: str = "", proveedor: str | None = None) -> tuple[str, str]:
+    """Devuelve el texto de un audio en español y quién lo transcribió ("Groq" u "OpenAI")."""
     es_wav = nombre_archivo.lower().endswith(".wav")
     if es_wav:
         partes = _partir_wav(audio) if len(audio) > LIMITE_API_MB * 1024 * 1024 else [audio]
@@ -57,5 +76,6 @@ def transcribir(audio: bytes, nombre_archivo: str, vocabulario: str = "") -> str
     else:
         partes = [audio]
     with ThreadPoolExecutor(max_workers=4) as hilos:  # los trozos se transcriben a la vez
-        textos = list(hilos.map(lambda parte: _whisper(parte, nombre_archivo, vocabulario), partes))
-    return " ".join(textos)
+        resultados = list(hilos.map(lambda parte: _whisper(parte, nombre_archivo, vocabulario, proveedor), partes))
+    quienes = sorted({quien for _, quien in resultados})
+    return " ".join(texto for texto, _ in resultados), " y ".join(quienes)
