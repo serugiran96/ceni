@@ -60,6 +60,8 @@ Por eso en Ceni el médico revisa y firma, los campos que no se dijeron quedan v
 
 ## 4. Solución e insight
 
+**Cómo llegamos a esta solución.** Antes de construir hicimos un [benchmark de 8 plataformas](docs/benchmark.md). Revisamos los sistemas de gestión para médicos más usados en la región (Doctoralia con Noa Notes, Doctocliq y Medilink) y los mejores asistentes con IA del mundo (Abridge, Dragon Copilot, Nabla, Heidi y Freed). También revisamos la normativa peruana: el formato de consulta externa (NTS 139-MINSA/2018), la receta (Ley 29459), los psicotrópicos (D. S. 023-2001-SA), los datos personales (Ley 29733) y la historia clínica electrónica (Ley 30024). Ninguna de esas plataformas junta IA en español del Perú, el formato del MINSA, la receta peruana y el pago por consulta.
+
 **Solución.** Con el permiso de la familia, el neuropediatra graba la consulta completa, sin cambiar su forma de atender. Ceni:
 
 1. **Transcribe** la conversación con Whisper.
