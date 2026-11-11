@@ -119,6 +119,8 @@ Antes de cada paciente, Ceni muestra lo que el médico necesita recordar: qué p
 
 **URL pública:** https://ceni-demo.streamlit.app/ (Streamlit Community Cloud)
 
+**Video de respaldo (68 s):** [docs/video-respaldo.webm](docs/video-respaldo.webm). Es la app publicada, con la IA de verdad, procesando el audio de ejemplo de 26 segundos.
+
 **Cómo correrlo en tu laptop:**
 
 ```bash
