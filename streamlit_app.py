@@ -24,7 +24,7 @@ ASSETS = Path(__file__).resolve().parent / "assets"
 # El logo va dentro de la página (base64): con st.image, Streamlit Cloud a veces pierde la imagen al redibujar.
 LOGO_BLANCO = base64.b64encode((ASSETS / "logo-blanco.png").read_bytes()).decode()
 
-st.set_page_config(page_title="Ceni", page_icon=str(ASSETS / "icono.png"), layout="wide", initial_sidebar_state="expanded")
+st.set_page_config(page_title="Ceni", page_icon=str(ASSETS / "icono.png"), layout="wide", initial_sidebar_state="auto")
 estilo.aplicar()
 
 # En Streamlit Cloud la clave vive en st.secrets. La copiamos a una variable de

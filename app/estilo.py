@@ -238,6 +238,34 @@ div[class*="st-key-grande"] button p, div[class*="st-key-procesar"] button p { f
 [data-testid="stForm"] { background: #FFFFFF; border-color: var(--borde); border-radius: 24px; box-shadow: var(--sombra); padding: 1.4rem 1.6rem; }
 [data-testid="stAudioInput"] > div { border-radius: 20px; border: 2px dashed #C9C0FF; background: #FAF9FF; min-height: 4.2rem; }
 [data-testid="stAlert"] > div { border-radius: 16px; }
+
+/* --- Responsive: las columnas se acomodan al espacio real, no al ancho de la pantalla ---
+   Streamlit solo apila columnas en celulares (< 640 px). Con la barra lateral abierta en una
+   laptop, la página puede quedar angosta y el texto se aplasta. Usamos "container queries":
+   cada bloque mira cuánto espacio tiene él mismo. */
+[data-testid="stMainBlockContainer"] { container-type: inline-size; container-name: pagina; }
+div[class*="st-key-tarjeta"], div[class*="st-key-listo"], [data-testid="stForm"] { container-type: inline-size; }
+div[class*="st-key-heroe"] { container-type: inline-size; container-name: heroe; }
+
+/* Filas de la página (agenda + calendario, grilla de pacientes): pasan a la línea siguiente. */
+@container pagina (max-width: 980px) {
+  [data-testid="stMainBlockContainer"] > [data-testid="stVerticalBlock"] > [data-testid="stLayoutWrapper"] > [data-testid="stHorizontalBlock"] {
+    flex-wrap: wrap; row-gap: 1rem;
+  }
+  [data-testid="stMainBlockContainer"] > [data-testid="stVerticalBlock"] > [data-testid="stLayoutWrapper"] > [data-testid="stHorizontalBlock"] > [data-testid="stColumn"] {
+    flex: 1 1 300px !important; min-width: min(100%, 300px) !important; width: auto !important;
+  }
+}
+/* Tarjetas y formularios angostos: sus columnas se apilan. */
+@container (max-width: 560px) {
+  [data-testid="stHorizontalBlock"] { flex-wrap: wrap; row-gap: .6rem; }
+  [data-testid="stHorizontalBlock"] > [data-testid="stColumn"] { flex: 1 1 100% !important; min-width: 100% !important; width: 100% !important; }
+}
+/* La tarjeta grande del siguiente paciente y la del paciente se apilan antes. */
+@container heroe (max-width: 700px) {
+  [data-testid="stHorizontalBlock"] { flex-wrap: wrap; row-gap: 1rem; }
+  [data-testid="stHorizontalBlock"] > [data-testid="stColumn"] { flex: 1 1 100% !important; min-width: 100% !important; width: 100% !important; }
+}
 </style>
 """
 
