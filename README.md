@@ -14,7 +14,14 @@ Hacemos la historia clínica, la nota de atención y la receta para neuropediatr
 
 ## 2. Founder
 
-> **Pendiente (lo escribe Melina):** quién soy y por qué soy la persona indicada para este problema.
+**Melina Rozas.** Soy especialista en producto digital, con más de 6 años construyendo productos en retail, telecomunicaciones y startups. Estudio la Diplomatura de Ciencia de Datos para las Ciencias Sociales y la Gestión Pública (Q-Lab PUCP).
+
+**Por qué yo:** mi hermana está abriendo un centro de neurología infantil con 3 sedes, y yo diseño sus sistemas, la web y el gestor de citas, junto al equipo de desarrollo. Ahí vi de cerca cuánto tiempo se va en documentar cada consulta. Sé convertir un problema en un producto, y ese centro es el primer lugar para probar Ceni.
+
+**Cómo cubro todo sola:**
+- **Producto y diseño:** son mi oficio.
+- **Ingeniería:** la hago con un agente de IA (Claude Code), revisando y entendiendo cada parte del código.
+- **Ventas:** empiezan por el centro de mi hermana y por los profesionales que entrevisté.
 
 ## 3. Problema
 
@@ -71,7 +78,9 @@ Antes de cada paciente, Ceni muestra lo que el médico necesita recordar: qué p
 
 ![Agenda del odontólogo: su siguiente paciente con la alergia y la derivación que registró la neuropediatra](docs/capturas/4-odontologo.png)
 
-> **Insight. Pendiente (lo escribe Melina):** lo que entendí del problema que otros no ven.
+**Insight 1. La historia ya se dijo en voz alta.** Durante la consulta, la familia cuenta y el médico examina e indica: la historia clínica ya existe, pero hablada. Hoy se hace dos veces, una conversando y otra tecleando. Una pediatra lo dijo así: «Lo más pesado es tener que escribir lo mismo que ya estuve conversando durante toda la consulta». Ceni no le pide al médico que cambie su forma de atender: convierte en documento lo que ya se dijo.
+
+**Insight 2. La confianza se gana midiendo el error, no prometiendo que no existe.** Los tres entrevistados temen lo mismo: que la IA se equivoque en una dosis o «complete cosas que yo no he dicho». Por eso Ceni no promete ser perfecta. El médico firma todo, y Ceni le muestra en cada atención cuánto acertó y cuánto tuvo que corregir.
 
 ## 5. Why now
 
@@ -79,7 +88,12 @@ Antes de cada paciente, Ceni muestra lo que el médico necesita recordar: qué p
 - **La IA ya puede llenar un formulario, no solo escribir texto.** Desde agosto de 2024, las salidas estructuradas de OpenAI garantizan que la respuesta tenga exactamente los campos del esquema. Por eso la nota cae en los campos de la historia clínica y no en un párrafo suelto.
 - **Los modelos pequeños cuestan menos de un centavo por consulta.** gpt-4.1-mini (2025) arma la nota, la receta y los datos nuevos por menos de US$ 0.01.
 
-> **Pendiente (lo completa Melina):** el contexto del Perú y de los neuropediatras que explica por qué ahora.
+**Y en el Perú:**
+- **La demanda crece:** en 2025, el MINSA reportó **96,512 casos de TEA atendidos** y **764,860 atenciones** en sus establecimientos ([MINSA](https://www.gob.pe/institucion/minsa/noticias/1372211-minsa-promueve-la-deteccion-temprana-del-autismo-y-registro-mas-de-764-000-atenciones-por-tea)). Cada una genera una historia, una nota y muchas veces una receta.
+- **El Estado empuja la historia clínica electrónica:**
+  - En 2013, la **Ley 30024** creó el Registro Nacional de Historias Clínicas Electrónicas (RENHICE).
+  - En 2025 se modificó su reglamento ([D. S. 020-2025-SA](https://lpderecho.pe/modifican-reglamento-ley-crea-registro-nacional-historias-clinicas-electronicas-renhice-decreto-supremo-020-2025-sa/)), y el MINSA reguló la acreditación de los sistemas de historia clínica electrónica ([R. M. 164-2025-MINSA](https://lpderecho.pe/minsa-regula-acreditacion-sistemas-historias-clinicas-electronicas-resolucion-ministerial-164-2025-minsa)).
+- **La práctica va atrás:** los consultorios siguen en Word, papel, Excel o sistemas básicos, como contaron las 3 personas entrevistadas. Ceni usa los campos del formato de consulta externa del MINSA desde el inicio.
 
 ## 6. Demo
 
