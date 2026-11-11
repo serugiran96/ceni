@@ -110,10 +110,10 @@ div[class*="st-key-listo"] {
 }
 div[class*="st-key-listo"] .ceni-titulo, div[class*="st-key-listo"] .ceni-texto { color: #FFFFFF; }
 div[class*="st-key-listo"] .ceni-meta { color: rgba(255,255,255,.9); }
-div[class*="st-key-listo"] button[data-testid^="stBaseButton-primary"] { background: #FFFFFF; border: none; }
+div[class*="st-key-listo"] button[data-testid^="stBaseButton-primary"] { background: #FFFFFF; color: #087F5B; border: none; }
 div[class*="st-key-listo"] button[data-testid^="stBaseButton-primary"] p { color: #087F5B; font-weight: 800; }
 div[class*="st-key-listo"] button[data-testid="stBaseButton-secondary"] {
-  background: rgba(255,255,255,.16); border-color: rgba(255,255,255,.55); }
+  background: rgba(255,255,255,.16); color: #FFFFFF; border-color: rgba(255,255,255,.55); }
 div[class*="st-key-listo"] button[data-testid="stBaseButton-secondary"] p { color: #FFFFFF; }
 
 /* Panel translúcido o suave dentro de una tarjeta */
