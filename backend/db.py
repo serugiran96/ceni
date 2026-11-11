@@ -24,7 +24,7 @@ CARPETA_DATOS = Path(__file__).resolve().parent.parent / "data"
 RUTA_DB = CARPETA_DATOS / "ceni.db"
 RUTA_SEMILLA = CARPETA_DATOS / "semilla.json"
 
-VERSION_ESQUEMA = 3  # súbela cuando cambien las tablas o los esquemas: la base se vuelve a crear
+VERSION_ESQUEMA = 4  # súbela cuando cambien las tablas, los esquemas o la semilla: la base se vuelve a crear
 LIMITE_SEMANAL = 10  # transcripciones por paciente en los últimos 7 días
 ESTADOS_CITA = ["Programada", "Atendida", "No asistió"]
 
