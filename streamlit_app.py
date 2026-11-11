@@ -4,6 +4,7 @@ Prepara la clave y la base de datos, aplica el estilo, dibuja la barra
 lateral (logo, menú y quién entra: el admin o un médico) y decide qué páginas mostrar.
 """
 
+import base64
 import os
 import time
 from html import escape
@@ -20,6 +21,8 @@ os.environ["TZ"] = "America/Lima"
 time.tzset()
 
 ASSETS = Path(__file__).resolve().parent / "assets"
+# El logo va dentro de la página (base64): con st.image, Streamlit Cloud a veces pierde la imagen al redibujar.
+LOGO_BLANCO = base64.b64encode((ASSETS / "logo-blanco.png").read_bytes()).decode()
 
 st.set_page_config(page_title="Ceni", page_icon=str(ASSETS / "icono.png"), layout="wide", initial_sidebar_state="expanded")
 estilo.aplicar()
@@ -82,7 +85,7 @@ def nombre_usuario(clave: str) -> str:
 
 
 with st.sidebar:
-    st.image(str(ASSETS / "logo-blanco.png"), width=200)  # el logo en blanco, sobre la barra oscura
+    estilo.html(f'<img src="data:image/png;base64,{LOGO_BLANCO}" alt="Ceni" width="200">')  # el logo en blanco
     estilo.html('<p class="ceni-lema">Tú atiendes. Ceni escribe la historia clínica y la receta.</p>')
     st.write("")
     for p in paginas:
