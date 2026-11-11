@@ -1,7 +1,8 @@
 """Cómo se muestran las fechas, la atención, la receta y la historia clínica en la app."""
 
-from datetime import date, datetime
+from datetime import date, datetime, timedelta
 from html import escape
+from urllib.parse import urlencode
 
 import streamlit as st
 
@@ -133,7 +134,7 @@ def diagnosticos_html(diagnosticos: list[Diagnostico]) -> str:
         return '<p class="ceni-vacio">Sin diagnóstico registrado.</p>'
     return "".join(
         '<div class="ceni-dx">'
-        + (estilo.chip(d.cie10, "violeta", CIE10[d.cie10]) if d.cie10 else estilo.chip("Sin código", "gris"))
+        + (estilo.chip(d.cie10, "violeta", CIE10.get(d.cie10, d.descripcion)) if d.cie10 else estilo.chip("Sin código", "gris"))
         + f'<div class="ceni-texto">{escape(d.descripcion)} '
         f'<span class="ceni-meta">· {TIPOS_DIAGNOSTICO[d.tipo]}</span></div></div>'
         for d in diagnosticos
@@ -173,7 +174,8 @@ def mostrar_atencion(nota: NotaAtencion, receta: list[Medicamento]) -> None:
             estilo.bloque("Motivo de consulta", estilo.texto(anamnesis))
             + estilo.bloque("Relato", estilo.lista(nota.relato))
             + estilo.bloque("Funciones biológicas", funciones_html(nota.funciones_biologicas))
-            + estilo.bloque("Examen físico y neurológico", estilo.lista(nota.examen))
+            + estilo.bloque("Examen físico", estilo.lista(nota.examen))
+            + "".join(estilo.bloque(c.nombre, estilo.texto(c.valor)) for c in nota.campos_especialidad if c.valor)
         )
     with derecha:
         estilo.html(
@@ -251,3 +253,22 @@ def duracion_texto(segundos: float) -> str:
     segundos = max(1, round(segundos))
     minutos, resto = divmod(segundos, 60)
     return f"{minutos} min {resto} s" if minutos else f"{resto} s"
+
+
+def enlace_google_calendar(cita: dict, consultorio: str) -> str:
+    """Enlace que abre Google Calendar con la cita lista para guardar.
+
+    Por privacidad, el evento lleva el número de historia clínica y no el nombre del paciente.
+    """
+    inicio = datetime.fromisoformat(f"{cita['fecha']}T{cita['hora']}")
+    fin = inicio + timedelta(minutes=40 if cita["tipo"] == "Primera vez" else 20)
+    datos = {
+        "action": "TEMPLATE",
+        "text": f"Consulta {cita['hc']} · {cita['tipo']}",
+        "dates": f"{inicio:%Y%m%dT%H%M%S}/{fin:%Y%m%dT%H%M%S}",
+        "ctz": "America/Lima",
+        "details": "Cita agendada en Ceni. Por privacidad, el evento no lleva el nombre del paciente.",
+        "location": consultorio,
+    }
+    return "https://calendar.google.com/calendar/render?" + urlencode(datos)
+

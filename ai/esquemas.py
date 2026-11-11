@@ -9,8 +9,9 @@ from typing import Literal
 
 from pydantic import BaseModel, Field
 
-# Subconjunto del CIE-10 (OMS) para neuropediatría y neurodesarrollo.
-# La IA solo puede elegir uno de estos códigos (o "" si ninguno corresponde).
+# Códigos CIE-10 (OMS) frecuentes en el centro de neurodesarrollo del demo. Sirven para
+# mostrar el nombre del diagnóstico; la IA puede usar cualquier código CIE-10, así Ceni
+# sirve para cualquier especialidad.
 CIE10 = {
     "F70": "Retraso mental leve",
     "F80.1": "Trastorno del lenguaje expresivo",
@@ -40,7 +41,6 @@ CIE10 = {
     "R56.0": "Convulsiones febriles",
     "R62.0": "Retardo del desarrollo",
 }
-CodigoCIE10 = Literal[("", *CIE10)]  # "" = sin código en el catálogo
 
 
 TipoDiagnostico = Literal["D", "P", "R"]  # Definitivo, Presuntivo, Repetitivo (como en el HIS del MINSA)
@@ -49,7 +49,7 @@ TIPOS_DIAGNOSTICO = {"D": "Definitivo", "P": "Presuntivo", "R": "Repetitivo"}
 
 class Diagnostico(BaseModel):
     descripcion: str = Field(description="El diagnóstico tal como lo dijo el médico.")
-    cie10: CodigoCIE10 = Field(description="Código CIE-10 del catálogo que corresponde; vacío si ninguno.")
+    cie10: str = Field(description="Código CIE-10 (OMS) que corresponde, p. ej. 'F84.0' o 'L20.9'. Vacío si no estás seguro.")
     tipo: TipoDiagnostico = Field(
         description="D = definitivo (confirmado hoy), P = presuntivo (sospecha, 'probable', 'descartar'), "
         "R = repetitivo (ya era definitivo en una atención anterior y se mantiene)."
@@ -111,6 +111,26 @@ def imc(signos: SignosVitales) -> float | None:
     return None
 
 
+class CampoPlantilla(BaseModel):
+    """Un campo propio de una especialidad, que el admin agrega a una plantilla."""
+
+    nombre: str = Field(description="Nombre del campo, p. ej. 'Escalas aplicadas'.")
+    descripcion: str = Field(description="Qué debe ir en el campo, para el médico y para la IA.")
+
+
+class Plantilla(BaseModel):
+    """Campos que una especialidad suma al formato de consulta externa del MINSA (que es igual para todos)."""
+
+    nombre: str = Field(description="Especialidad, p. ej. 'Dermatología pediátrica'.")
+    campos: list[CampoPlantilla] = Field(description="Campos propios de la especialidad, sin repetir los del formato MINSA.")
+    vocabulario: str = Field(description="Términos y medicamentos frecuentes, para que la transcripción los escriba bien.")
+
+
+class CampoEspecialidad(BaseModel):
+    nombre: str = Field(description="El nombre exacto del campo de la plantilla.")
+    valor: str = Field(description="Lo que se dijo para ese campo. Vacío si no se habló de él.")
+
+
 class NotaAtencion(BaseModel):
     """Lo que pasó en una atención, en el orden del formato de consulta externa."""
 
@@ -120,15 +140,19 @@ class NotaAtencion(BaseModel):
     relato: list[str] = Field(description="Lo que contaron la familia, el colegio o las terapeutas.")
     funciones_biologicas: FuncionesBiologicas
     signos_vitales: SignosVitales
-    examen: list[str] = Field(description="Examen físico y neurológico: lo que observó o examinó el médico.")
+    examen: list[str] = Field(description="Examen físico: lo que observó o examinó el profesional.")
     diagnosticos: list[Diagnostico] = Field(description="Diagnósticos o impresiones que dijo el médico hoy.")
     examenes_auxiliares: list[str] = Field(description="Exámenes pedidos: laboratorio, imágenes, EEG, audiometría, escalas.")
-    interconsultas: list[str] = Field(description="Interconsultas, derivaciones y terapias indicadas (lenguaje, ocupacional...).")
+    interconsultas: list[str] = Field(description="Interconsultas, derivaciones y terapias indicadas.")
     indicaciones: list[str] = Field(description="Indicaciones sin medicamentos para la familia y el colegio.")
     proximo_control: str = Field(description="Cuándo es el próximo control, como lo dijo el médico. Vacío si no se dijo.")
     proximo_control_semanas: int = Field(description="El próximo control en semanas (2 meses = 8). 0 si no se dijo.")
     por_confirmar: list[str] = Field(
         description="Datos que no se entendieron bien en el audio y el médico debe confirmar (sobre todo dosis)."
+    )
+    campos_especialidad: list[CampoEspecialidad] = Field(
+        default_factory=list,
+        description="Un elemento por cada campo de la plantilla de la especialidad, en el mismo orden y con el nombre exacto.",
     )
 
 

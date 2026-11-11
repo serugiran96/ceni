@@ -1,11 +1,12 @@
 """Punto de entrada de Ceni: `streamlit run streamlit_app.py`.
 
 Prepara la clave y la base de datos, aplica el estilo, dibuja la barra
-lateral (logo, menú y quién atiende) y decide qué página mostrar.
+lateral (logo, menú y quién entra: el admin o un médico) y decide qué páginas mostrar.
 """
 
 import os
 import time
+from html import escape
 from pathlib import Path
 
 import streamlit as st
@@ -49,16 +50,36 @@ if "reiniciar" in st.query_params:
     st.session_state.clear()
     st.query_params.clear()
 
-# Color del avatar de cada profesional en la barra lateral.
-AVATAR_MEDICO = {1: "#FFB020,#FF7A59", 2: "#38D9A9,#4DABF7"}
+# Color del avatar en la barra lateral: el admin en coral; los médicos rotan entre estos.
+AVATAR_ADMIN = "#FF6F61,#C2255C"
+AVATARES = ["#FFB020,#FF7A59", "#38D9A9,#4DABF7", "#B197FC,#5B47FB", "#FF8787,#F06595"]
 
+# Quién entra. En el demo se elige en la barra lateral; en producción sería un inicio de sesión.
+# "admin" es Melina (da de alta consultorios, médicos y plantillas); "m<id>" es un médico.
+usuarios = {"admin": None} | {f"m{m['id']}": m for m in db.medicos()}
+if st.session_state.get("usuario") not in usuarios:
+    st.session_state["usuario"] = "m1"
+medico = usuarios[st.session_state["usuario"]]
+if medico:
+    st.session_state["medico_id"] = medico["id"]  # las páginas leen este valor
 
-paginas = [
-    st.Page("app/agenda.py", title="Agenda", icon=":material/calendar_month:", default=True),
-    st.Page("app/pacientes.py", title="Pacientes", icon=":material/groups:"),
-    st.Page("app/ficha.py", title="Ficha del paciente", icon=":material/folder_shared:"),
-]
+if medico:
+    paginas = [
+        st.Page("app/agenda.py", title="Agenda", icon=":material/calendar_month:", default=True),
+        st.Page("app/pacientes.py", title="Pacientes", icon=":material/groups:"),
+        st.Page("app/ficha.py", title="Ficha del paciente", icon=":material/folder_shared:"),
+        st.Page("app/metricas.py", title="Mis métricas", icon=":material/insights:"),
+    ]
+else:
+    paginas = [st.Page("app/admin.py", title="Panel de admin", icon=":material/admin_panel_settings:", default=True)]
 pagina = st.navigation(paginas, position="hidden")  # el menú lo dibujamos abajo, debajo del logo
+
+
+def nombre_usuario(clave: str) -> str:
+    if clave == "admin":
+        return f"{db.admin()['nombre']} · Admin"
+    return f"{usuarios[clave]['nombre']} · {usuarios[clave]['consultorio']}"
+
 
 with st.sidebar:
     st.image(str(ASSETS / "logo-blanco.png"), width=200)  # el logo en blanco, sobre la barra oscura
@@ -67,18 +88,20 @@ with st.sidebar:
     for p in paginas:
         st.page_link(p, width="stretch")
     st.write("")
-    # Cada profesional del centro tiene su agenda y firma sus atenciones; la historia clínica es una sola.
-    profesionales = {m["id"]: m for m in db.medicos()}
-    st.selectbox("¿Quién atiende?", list(profesionales), format_func=lambda i: profesionales[i]["nombre"],
-                 key="medico_id")
-    medico = profesionales[st.session_state["medico_id"]]
-    nombre = medico["nombre"].split()
+    st.selectbox("Entrar como", list(usuarios), format_func=nombre_usuario, key="usuario")
+    if medico:
+        nombre = medico["nombre"].split()
+        iniciales, titulo, detalle = f"{nombre[1][0]}{nombre[-1][0]}", medico["nombre"], medico["especialidad"]
+        color = AVATARES[(medico["id"] - 1) % len(AVATARES)]
+    else:
+        nombre = db.admin()["nombre"].split()
+        iniciales, titulo, detalle = f"{nombre[0][0]}{nombre[-1][0]}", db.admin()["nombre"], db.admin()["rol"]
+        color = AVATAR_ADMIN
     estilo.html(
         '<div class="ceni-medico">'
-        f'<div class="ceni-avatar" style="background:linear-gradient(135deg,{AVATAR_MEDICO.get(medico["id"], "#FFB020,#FF7A59")})">'
-        f'{nombre[1][0]}{nombre[-1][0]}</div>'
-        f'<div><div class="ceni-nombre" style="font-size:.98rem">{medico["nombre"]}</div>'
-        f'<div class="ceni-meta">{medico["especialidad"]}</div></div></div>'
+        f'<div class="ceni-avatar" style="background:linear-gradient(135deg,{color})">{iniciales}</div>'
+        f'<div><div class="ceni-nombre" style="font-size:.98rem">{escape(titulo)}</div>'
+        f'<div class="ceni-meta">{escape(detalle)}</div></div></div>'
     )
 
 pagina.run()

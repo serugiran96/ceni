@@ -1,19 +1,124 @@
 {
-  "_aviso": "Datos inventados para el demo de Ceni: los pacientes, las familias, las atenciones y las recetas no son reales. Las recetas son ficticias y no son una recomendación médica.",
-  "medicos": [
+  "_aviso": "Datos inventados para el demo de Ceni: los pacientes, las familias, las atenciones y las recetas no son reales. Las recetas son ficticias y no son una recomendación médica. Los consultorios del demo también son inventados.",
+  "admin": {
+    "nombre": "Melina Rozas",
+    "rol": "Admin de Ceni"
+  },
+  "consultorios": [
     {
       "id": 1,
-      "nombre": "Dra. Nattaly Rozas",
-      "especialidad": "Neuropediatría",
-      "colegiatura": "CMP 000000 · RNE 000000 (ficticios)",
-      "vocabulario": "Melatonina, metilfenidato, risperidona, TEA, TDAH, terapia ocupacional, pictogramas."
+      "nombre": "Centro de Neurodesarrollo San Miguel",
+      "distrito": "San Miguel"
     },
     {
       "id": 2,
+      "nombre": "Consultorio Pediátrico Surco",
+      "distrito": "Santiago de Surco"
+    }
+  ],
+  "plantillas": [
+    {
+      "id": 1,
+      "nombre": "Neurología pediátrica",
+      "campos": [
+        {
+          "nombre": "Examen neurológico",
+          "descripcion": "Tono, fuerza, reflejos, marcha, pares craneales y signos de alarma."
+        },
+        {
+          "nombre": "Lenguaje y comunicación",
+          "descripcion": "Palabras, frases, comprensión y comunicación no verbal."
+        },
+        {
+          "nombre": "Conducta y regulación",
+          "descripcion": "Crisis, rabietas, rigidez, estereotipias e interacción con otros niños."
+        },
+        {
+          "nombre": "Escalas aplicadas",
+          "descripcion": "M-CHAT-R, Conners, SNAP-IV u otras, con su resultado."
+        },
+        {
+          "nombre": "Desempeño escolar",
+          "descripcion": "Lo que reportan el nido o el colegio."
+        }
+      ],
+      "vocabulario": "Melatonina, metilfenidato, risperidona, aripiprazol, TEA, TDAH, M-CHAT, Conners, terapia ocupacional, terapia de lenguaje, pictogramas."
+    },
+    {
+      "id": 2,
+      "nombre": "Odontología para pacientes especiales",
+      "campos": [
+        {
+          "nombre": "Piezas tratadas",
+          "descripcion": "Piezas dentales evaluadas o tratadas (numeración FDI) y su estado."
+        },
+        {
+          "nombre": "Procedimiento realizado",
+          "descripcion": "Lo que se hizo hoy: profilaxis, sellantes, restauración, extracción."
+        },
+        {
+          "nombre": "Materiales usados",
+          "descripcion": "Materiales y anestesia usados."
+        },
+        {
+          "nombre": "Manejo de conducta",
+          "descripcion": "Técnica usada para que el paciente coopere (decir-mostrar-hacer, anticipación con pictogramas)."
+        },
+        {
+          "nombre": "Higiene oral",
+          "descripcion": "Placa, encías y hábitos de cepillado."
+        }
+      ],
+      "vocabulario": "Caries, barniz de flúor, sellantes, profilaxis, cepillado, hilo dental, anestesia local, paracetamol, ibuprofeno, desensibilización, pictogramas."
+    },
+    {
+      "id": 3,
+      "nombre": "Dermatología pediátrica",
+      "campos": [
+        {
+          "nombre": "Tipo de lesión",
+          "descripcion": "Mácula, pápula, placa, vesícula, costra u otra."
+        },
+        {
+          "nombre": "Localización y extensión",
+          "descripcion": "Dónde están las lesiones y cuánto cubren."
+        },
+        {
+          "nombre": "Evolución",
+          "descripcion": "Desde cuándo, cómo cambiaron y qué las empeora."
+        },
+        {
+          "nombre": "Cuidados de la piel",
+          "descripcion": "Baño, hidratación y productos que usa."
+        }
+      ],
+      "vocabulario": "Dermatitis atópica, emolientes, hidrocortisona, mometasona, tacrolimus, cetirizina, prurito, xerosis."
+    }
+  ],
+  "medicos": [
+    {
+      "id": 1,
+      "consultorio_id": 1,
+      "nombre": "Dra. Nattaly Rozas",
+      "especialidad": "Neuropediatría",
+      "colegiatura": "CMP 000000 · RNE 000000 (ficticios)",
+      "plantilla_id": 1
+    },
+    {
+      "id": 2,
+      "consultorio_id": 1,
       "nombre": "Dr. Juan Carlos Pumayali",
       "especialidad": "Odontología para pacientes especiales",
       "colegiatura": "COP 000000 (ficticio)",
-      "vocabulario": "Caries, barniz de flúor, sellantes, profilaxis, cepillado, hilo dental, anestesia local, paracetamol, ibuprofeno, desensibilización, pictogramas."
+      "plantilla_id": 2
+    },
+    {
+      "id": 3,
+      "consultorio_id": 2,
+      "nombre": "Dra. Lucía Herrera",
+      "especialidad": "Dermatología pediátrica",
+      "colegiatura": "CMP 000000 · RNE 000000 (ficticios)",
+      "plantilla_id": 3
     }
   ],
   "pacientes": [
@@ -253,7 +358,8 @@
             }
           ]
         }
-      ]
+      ],
+      "consultorio_id": 1
     },
     {
       "id": 2,
@@ -414,7 +520,8 @@
             }
           ]
         }
-      ]
+      ],
+      "consultorio_id": 1
     },
     {
       "id": 3,
@@ -565,7 +672,8 @@
           },
           "receta": []
         }
-      ]
+      ],
+      "consultorio_id": 1
     },
     {
       "id": 4,
@@ -714,7 +822,8 @@
           },
           "receta": []
         }
-      ]
+      ],
+      "consultorio_id": 1
     }
   ],
   "citas": [

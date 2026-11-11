@@ -31,7 +31,7 @@ def registrar() -> None:
                 st.error("Completa al menos el nombre, la fecha de nacimiento y el apoderado.")
             else:
                 st.session_state["paciente_id"] = db.crear_paciente({
-                    "nombre": nombre.strip(), "fecha_nacimiento": nacimiento.isoformat(), "sexo": sexo,
+                    "consultorio_id": medico["consultorio_id"], "nombre": nombre.strip(), "fecha_nacimiento": nacimiento.isoformat(), "sexo": sexo,
                     "apoderado": apoderado.strip(), "distrito": distrito.strip(),
                     "colegio": colegio.strip(), "seguro": seguro,
                 })
@@ -39,17 +39,21 @@ def registrar() -> None:
                 st.switch_page("app/ficha.py")
 
 
-todos = db.listar_pacientes()
+medico = db.medico(st.session_state.get("medico_id", 1))
+todos = db.listar_pacientes(medico["consultorio_id"])  # un consultorio solo ve sus pacientes
 titulo, boton = st.columns([3, 1], vertical_alignment="bottom")
 with titulo:
-    estilo.encabezado("Pacientes", f"{len(todos)} pacientes en seguimiento", "Neuropediatría")
+    estilo.encabezado("Pacientes", f"{len(todos)} pacientes en seguimiento", medico["consultorio"])
 if boton.button("Paciente nuevo", type="primary", icon=":material/person_add:", width="stretch"):
     registrar()
 
 buscar = st.text_input("Buscar paciente", placeholder="Nombre o apellido", icon=":material/search:",
                        label_visibility="collapsed")
-pacientes = db.listar_pacientes(buscar)
-if not pacientes:
+pacientes = db.listar_pacientes(medico["consultorio_id"], buscar)
+if not todos:
+    st.info("Todavía no hay pacientes en este consultorio. Registra el primero con «Paciente nuevo».",
+            icon=":material/person_add:")
+elif not pacientes:
     st.info("No hay pacientes con ese nombre.", icon=":material/search_off:")
 
 for inicio in range(0, len(pacientes), COLUMNAS):

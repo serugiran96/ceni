@@ -23,7 +23,7 @@ import pandas as pd
 import streamlit as st
 
 from ai.cliente import hay_clave
-from ai.esquemas import (CIE10, HISTORIA_VACIA, TIPOS_DIAGNOSTICO, Diagnostico, FuncionesBiologicas, HistoriaClinica,
+from ai.esquemas import (HISTORIA_VACIA, CampoEspecialidad, TIPOS_DIAGNOSTICO, Diagnostico, FuncionesBiologicas, HistoriaClinica,
                          Medicamento, NotaAtencion, SignosVitales, fusionar_historia)
 from ai.generar import procesar_atencion
 from ai.transcribir import transcribir
@@ -89,7 +89,12 @@ def ir_a_paciente(paciente_id: int, cita_id: int | None) -> None:
 
 
 # --- Quién es el paciente ------------------------------------------------------
-pacientes = db.listar_pacientes()
+medico = db.medico(st.session_state.get("medico_id", 1))  # quién entró, elegido en la barra lateral
+pacientes = db.listar_pacientes(medico["consultorio_id"])  # solo los pacientes de su consultorio
+if not pacientes:
+    estilo.encabezado("Ficha del paciente", "Todavía no hay pacientes en este consultorio.", medico["consultorio"])
+    st.page_link("app/pacientes.py", label="Registrar el primer paciente", icon=":material/person_add:")
+    st.stop()
 nombres = {p["id"]: p["nombre"] for p in pacientes}
 if st.session_state.get("paciente_id") not in nombres:
     st.session_state["paciente_id"] = pacientes[0]["id"]
@@ -98,7 +103,6 @@ paciente_id = st.session_state["paciente_id"]  # lo cambia el selector de abajo 
 paciente = db.obtener_paciente(paciente_id)
 historia, actualizada = db.historia_de(paciente_id)
 atenciones = db.atenciones_de(paciente_id)  # de la más reciente a la más antigua
-medico = db.medico(st.session_state.get("medico_id", 1))  # quién atiende, elegido en la barra lateral
 proxima = db.proxima_cita_de(paciente_id, medico["id"])
 
 
@@ -312,10 +316,22 @@ with nueva_tab:
                     step=paso, format=formato,
                 )
 
-            estilo.seccion(4, "Examen físico y neurológico", tono="coral")
+            estilo.seccion(4, "Examen físico", tono="coral")
             examen = st.text_area("Hallazgos (uno por línea)", "\n".join(nota.examen), label_visibility="collapsed")
 
-            estilo.seccion(5, "Diagnósticos", "CIE-10 · D definitivo, P presuntivo, R repetitivo", tono="violeta")
+            # Campos propios de la especialidad del médico (vienen de su plantilla, que arma el admin).
+            plantilla = medico["plantilla"]
+            campos_especialidad = {}
+            if plantilla and plantilla.campos:
+                estilo.seccion(5, plantilla.nombre, "campos de la especialidad", tono="sol")
+                valores = {c.nombre: c.valor for c in nota.campos_especialidad}
+                columnas_esp = st.columns(2)
+                for i, campo in enumerate(plantilla.campos):
+                    campos_especialidad[campo.nombre] = columnas_esp[i % 2].text_area(
+                        campo.nombre, valores.get(campo.nombre, ""), help=campo.descripcion, height=90,
+                    )
+
+            estilo.seccion(6, "Diagnósticos", "CIE-10 · D definitivo, P presuntivo, R repetitivo", tono="violeta")
             diagnosticos_editados = st.data_editor(
                 pd.DataFrame([d.model_dump() for d in nota.diagnosticos], columns=["tipo", "descripcion", "cie10"]),
                 num_rows="dynamic", hide_index=True, width="stretch", key=f"dx_{b}",
@@ -325,13 +341,11 @@ with nueva_tab:
                         width="small", required=True,
                     ),
                     "descripcion": st.column_config.TextColumn("Diagnóstico", width="large"),
-                    "cie10": st.column_config.SelectboxColumn(
-                        "CIE-10", options=["", *CIE10], format_func=lambda c: f"{c} · {CIE10[c]}" if c else "Sin código"
-                    ),
+                    "cie10": st.column_config.TextColumn("CIE-10", help="Código CIE-10 de la OMS, p. ej. F84.0"),
                 },
             )
 
-            estilo.seccion(6, "Tratamiento", "receta según la Ley 29459", tono="rosa")
+            estilo.seccion(7, "Tratamiento", "receta según la Ley 29459", tono="rosa")
             for alerta in alertas_receta(resultado.receta, propuesta):
                 st.warning(alerta, icon=":material/medication:")
             receta_editada = st.data_editor(
@@ -340,13 +354,13 @@ with nueva_tab:
                 column_config={c: st.column_config.TextColumn(t) for c, t in COLUMNAS_RECETA.items()},
             )
 
-            estilo.seccion(7, "Plan de trabajo", "uno por línea", tono="sol")
+            estilo.seccion(8, "Plan de trabajo", "uno por línea", tono="sol")
             p1, p2, p3 = st.columns(3)
             examenes = p1.text_area("Exámenes auxiliares", "\n".join(nota.examenes_auxiliares))
             interconsultas = p2.text_area("Interconsultas y terapias", "\n".join(nota.interconsultas))
             indicaciones = p3.text_area("Indicaciones", "\n".join(nota.indicaciones))
 
-            estilo.seccion(8, "Historia clínica", "ya incluye lo nuevo de hoy; los diagnósticos se agregan solos",
+            estilo.seccion(9, "Historia clínica", "ya incluye lo nuevo de hoy; los diagnósticos se agregan solos",
                            tono="cielo")
             nueva = resultado.historia_nueva.model_dump()
             campos_historia = {}
@@ -361,7 +375,7 @@ with nueva_tab:
                 else:
                     campos_historia[campo] = columna.text_area(titulo, valor).strip()
 
-            estilo.seccion(9, "Próximo control", tono="menta")
+            estilo.seccion(10, "Próximo control", tono="menta")
             semanas = nota.proximo_control_semanas
             k1, k2, k3, k4 = st.columns([2, 1.3, 1.3, 1], vertical_alignment="bottom")
             proximo = k1.text_input("Como lo indicó el médico", nota.proximo_control)
@@ -383,6 +397,7 @@ with nueva_tab:
                 examen=lineas(examen), diagnosticos=diagnosticos, examenes_auxiliares=lineas(examenes),
                 interconsultas=lineas(interconsultas), indicaciones=lineas(indicaciones),
                 proximo_control=proximo.strip(), proximo_control_semanas=semanas, por_confirmar=lineas(por_confirmar),
+                campos_especialidad=[CampoEspecialidad(nombre=n, valor=v.strip()) for n, v in campos_especialidad.items()],
             )
             # La historia editada por el médico + los diagnósticos de hoy (nuevos o confirmados).
             historia_final = fusionar_historia(
@@ -391,18 +406,20 @@ with nueva_tab:
             )
             # Cuánto acertó Ceni: su borrador contra lo que firma el médico (que sabe qué se dijo).
             acierto = comparar(resultado.atencion, resultado.receta, nota_final, receta)
+            segundos_revision = monotonic() - borrador["listo_en"]
             atencion_id = db.guardar_atencion(
                 paciente_id, fecha, borrador["transcripcion"], nota_final, receta, historia_final,
                 firmado_por=medico["nombre"], consentimiento_en=borrador["consentimiento_en"],
                 cita_id=cita["id"] if cita else None,
                 proxima_cita=(fecha_control, hora_control.strftime("%H:%M")) if agendar else None,
                 medico_id=medico["id"], borrador=(resultado.atencion, resultado.receta),
+                segundos_ia=borrador["segundos_ia"], segundos_revision=segundos_revision,
             )
             st.session_state["recien_firmada"] = {
                 "paciente_id": paciente_id,
                 "atencion_id": atencion_id,
                 "segundos_ia": borrador["segundos_ia"],
-                "segundos_revision": monotonic() - borrador["listo_en"],
+                "segundos_revision": segundos_revision,
                 "acierto": acierto_texto(acierto),
                 "cambios": acierto.cambios,
                 "detalle": "La historia clínica se actualizó"

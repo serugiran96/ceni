@@ -12,7 +12,7 @@ from html import escape
 import streamlit as st
 
 from app import estilo
-from app.formato import antes_de_empezar_html, chips_paciente, cuando_texto, dia_texto, fecha_corta
+from app.formato import antes_de_empezar_html, chips_paciente, cuando_texto, dia_texto, enlace_google_calendar, fecha_corta
 from backend import db
 
 ESTADOS = {  # color e ícono de la etiqueta de las citas que ya pasaron
@@ -31,7 +31,10 @@ def abrir_ficha(paciente_id: int, cita_id: int | None = None) -> None:
 
 @st.dialog("Agendar una cita")
 def agendar(dia_sugerido: date) -> None:
-    pacientes = db.listar_pacientes()
+    pacientes = db.listar_pacientes(medico["consultorio_id"])  # solo los pacientes de este consultorio
+    if not pacientes:
+        st.info("Primero registra un paciente en la página Pacientes.", icon=":material/person_add:")
+        return
     nombres = {p["id"]: p["nombre"] for p in pacientes}
     with st.form("nueva_cita", border=False):
         paciente_id = st.selectbox("Paciente", list(nombres), format_func=nombres.get)
@@ -117,10 +120,11 @@ with principal:
         (str(sum(c["estado"] == "Atendida" for c in citas)), "", "atendidas", "menta"),
         (str(len(proximas)), "", "en los próximos 7 días", "sol"),
     ]
-    # Cuánto acertó Ceni en las atenciones que firmó este profesional en los últimos 30 días.
-    acierto, firmadas = db.acierto_reciente(medico["nombre"])
-    if firmadas and acierto.total:
-        cifras.append((f"{acierto.porcentaje:.0%}", "", f"acierto de Ceni en {firmadas} atenciones (30 días)", "cielo"))
+    # Cuánto acertó Ceni en las atenciones que firmó este médico en los últimos 30 días.
+    metricas = db.metricas_medico(medico["id"])
+    if metricas["atenciones"] and metricas["acierto"].total:
+        cifras.append((f"{metricas['acierto'].porcentaje:.0%}", "",
+                       f"acierto de Ceni en {metricas['atenciones']} atenciones (30 días)", "cielo"))
     estilo.html(estilo.cifras(cifras))
     st.write("")
     estilo.html(estilo.titulo(f"Agenda de {cuando_texto(dia)}", "event_note", "violeta", f"{len(citas)} citas"))
@@ -143,6 +147,9 @@ with principal:
                 if c["estado"] == "Programada":
                     if st.button("Atender", key=f"atender_{c['id']}", type="primary", icon=":material/mic:", width="stretch"):
                         abrir_ficha(c["paciente_id"], c["id"])
+                    st.link_button("Google Calendar", enlace_google_calendar(c, medico["consultorio"]),
+                                   icon=":material/event:", type="tertiary", width="stretch",
+                                   help="Agrega la cita a tu Google Calendar, sin el nombre del paciente.")
                     if st.button("No asistió", key=f"falta_{c['id']}", type="tertiary", width="stretch"):
                         db.cambiar_estado_cita(c["id"], "No asistió")
                         st.rerun()

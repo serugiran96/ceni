@@ -275,7 +275,7 @@ def chips(lista: list[str]) -> str:
 
 
 def iniciales(nombre: str) -> str:
-    partes = nombre.split()
+    partes = [p for p in nombre.split() if p.lower() not in ("dr.", "dra.")]  # sin el título del médico
     return (partes[0][0] + (partes[1][0] if len(partes) > 1 else "")).upper()
 
 

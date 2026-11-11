@@ -1,11 +1,15 @@
 """Base de datos de Ceni (SQLite).
 
 Tablas:
-- pacientes: datos personales.
+- consultorios: cada cliente de Ceni (un consultorio o centro, con uno o varios médicos).
+- plantillas: los campos que cada especialidad suma al formato de consulta externa del MINSA.
+- medicos: cada profesional, con su consultorio y su plantilla.
+- pacientes: datos personales; cada paciente es de un consultorio.
 - historias: la historia clínica acumulada de cada paciente (JSON validado por Pydantic).
 - atenciones: cada consulta, con su transcripción, su nota, su receta (JSON),
   quién la firmó y cuándo, cuándo autorizó la familia la grabación y el
-  borrador que propuso la IA (para medir cuánto acertó Ceni).
+  borrador que propuso la IA (para medir cuánto acertó Ceni), quién la atendió
+  y cuánto tardaron la IA y el médico.
 - citas: la agenda de cada profesional del centro (medico_id).
 - transcripciones: registro de cada vez que se procesa una consulta (para el límite semanal).
 
@@ -19,20 +23,38 @@ import sqlite3
 from datetime import date, datetime, timedelta
 from pathlib import Path
 
-from ai.esquemas import HISTORIA_VACIA, HistoriaClinica, Medicamento, NotaAtencion
+from ai.esquemas import HISTORIA_VACIA, HistoriaClinica, Medicamento, NotaAtencion, Plantilla
 from backend.acierto import Acierto, comparar
 
 CARPETA_DATOS = Path(__file__).resolve().parent.parent / "data"
 RUTA_DB = CARPETA_DATOS / "ceni.db"
 RUTA_SEMILLA = CARPETA_DATOS / "semilla.json"
 
-VERSION_ESQUEMA = 5  # súbela cuando cambien las tablas, los esquemas o la semilla: la base se vuelve a crear
+VERSION_ESQUEMA = 6  # súbela cuando cambien las tablas, los esquemas o la semilla: la base se vuelve a crear
 LIMITE_SEMANAL = 10  # transcripciones por paciente en los últimos 7 días
 ESTADOS_CITA = ["Programada", "Atendida", "No asistió"]
 
 ESQUEMA_SQL = """
+CREATE TABLE IF NOT EXISTS consultorios (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    nombre TEXT NOT NULL,
+    distrito TEXT NOT NULL DEFAULT ''
+);
+CREATE TABLE IF NOT EXISTS plantillas (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    plantilla_json TEXT NOT NULL   -- nombre, campos y vocabulario (validado por Pydantic)
+);
+CREATE TABLE IF NOT EXISTS medicos (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    consultorio_id INTEGER NOT NULL REFERENCES consultorios(id),
+    nombre TEXT NOT NULL,
+    especialidad TEXT NOT NULL,    -- solo se muestra; los campos vienen de la plantilla
+    colegiatura TEXT NOT NULL,
+    plantilla_id INTEGER REFERENCES plantillas(id)
+);
 CREATE TABLE IF NOT EXISTS pacientes (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
+    consultorio_id INTEGER NOT NULL DEFAULT 1 REFERENCES consultorios(id),
     nombre TEXT NOT NULL,
     fecha_nacimiento TEXT NOT NULL,
     sexo TEXT NOT NULL,
@@ -57,7 +79,10 @@ CREATE TABLE IF NOT EXISTS atenciones (
     consentimiento_en TEXT,        -- cuándo marcó el médico que la familia autorizó grabar
     firmado_por TEXT NOT NULL,
     firmado_en TEXT NOT NULL,
-    borrador_json TEXT             -- lo que propuso la IA antes de que el médico corrigiera
+    borrador_json TEXT,            -- lo que propuso la IA antes de que el médico corrigiera
+    medico_id INTEGER REFERENCES medicos(id),
+    segundos_ia REAL,              -- cuánto tardó Ceni en armar el borrador
+    segundos_revision REAL         -- cuánto tardó el médico en revisar y firmar
 );
 CREATE TABLE IF NOT EXISTS citas (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -75,7 +100,8 @@ CREATE TABLE IF NOT EXISTS transcripciones (
 );
 """
 
-CAMPOS_PACIENTE = ["nombre", "fecha_nacimiento", "sexo", "apoderado", "distrito", "colegio", "seguro"]
+CAMPOS_PACIENTE = ["consultorio_id", "nombre", "fecha_nacimiento", "sexo", "apoderado", "distrito", "colegio", "seguro"]
+CAMPOS_MEDICO = ["consultorio_id", "nombre", "especialidad", "colegiatura", "plantilla_id"]
 
 
 def conectar() -> sqlite3.Connection:
@@ -107,7 +133,17 @@ def crear_base(desde_cero: bool = False) -> None:
 
 def _cargar_semilla(con: sqlite3.Connection) -> None:
     semilla = _semilla()
-    medico = semilla["medicos"][0]["nombre"]  # las atenciones previas son de neuropediatría
+    for c in semilla["consultorios"]:
+        con.execute("INSERT INTO consultorios (id, nombre, distrito) VALUES (?, ?, ?)", (c["id"], c["nombre"], c["distrito"]))
+    for pl in semilla["plantillas"]:
+        datos = Plantilla.model_validate(pl)  # la semilla pasa por los mismos esquemas
+        con.execute("INSERT INTO plantillas (id, plantilla_json) VALUES (?, ?)", (pl["id"], datos.model_dump_json()))
+    for m in semilla["medicos"]:
+        con.execute(
+            f"INSERT INTO medicos (id, {', '.join(CAMPOS_MEDICO)}) VALUES (?, {', '.join('?' * len(CAMPOS_MEDICO))})",
+            (m["id"], *[m[c] for c in CAMPOS_MEDICO]),
+        )
+    medico = semilla["medicos"][0]  # las atenciones previas son de la neuropediatra
     for p in semilla["pacientes"]:
         con.execute(
             f"INSERT INTO pacientes (id, {', '.join(CAMPOS_PACIENTE)}) VALUES (?, {', '.join('?' * len(CAMPOS_PACIENTE))})",
@@ -121,9 +157,10 @@ def _cargar_semilla(con: sqlite3.Connection) -> None:
             receta = [Medicamento.model_validate(m) for m in a["receta"]]
             hora = f"{a['fecha']}T10:00:00"
             con.execute(
-                """INSERT INTO atenciones (paciente_id, fecha, nota_json, receta_json, consentimiento_en, firmado_por, firmado_en)
-                   VALUES (?, ?, ?, ?, ?, ?, ?)""",
-                (p["id"], a["fecha"], nota.model_dump_json(), _receta_json(receta), hora, medico, hora),
+                """INSERT INTO atenciones (paciente_id, fecha, nota_json, receta_json, consentimiento_en, firmado_por,
+                                          firmado_en, medico_id)
+                   VALUES (?, ?, ?, ?, ?, ?, ?, ?)""",
+                (p["id"], a["fecha"], nota.model_dump_json(), _receta_json(receta), hora, medico["nombre"], hora, medico["id"]),
             )
     hoy = date.today()
     for c in semilla["citas"]:  # relativas a hoy, para que la agenda del demo nunca esté vacía
@@ -133,14 +170,74 @@ def _cargar_semilla(con: sqlite3.Connection) -> None:
         )
 
 
-def medicos() -> list[dict]:
-    """Los profesionales del centro que usan Ceni (en el demo, vienen de la semilla)."""
-    return _semilla()["medicos"]
+def admin() -> dict:
+    """Quien administra Ceni: da de alta consultorios, médicos y plantillas."""
+    return _semilla()["admin"]
+
+
+# --- Consultorios, plantillas y médicos ---------------------------------------------
+
+def consultorios() -> list[dict]:
+    """Los consultorios, con cuántos médicos y pacientes tiene cada uno."""
+    with conectar() as con:
+        filas = con.execute(
+            """SELECT c.*,
+                      (SELECT COUNT(*) FROM medicos m WHERE m.consultorio_id = c.id) AS n_medicos,
+                      (SELECT COUNT(*) FROM pacientes p WHERE p.consultorio_id = c.id) AS n_pacientes
+               FROM consultorios c ORDER BY c.id"""
+        ).fetchall()
+    return [dict(f) for f in filas]
+
+
+def crear_consultorio(nombre: str, distrito: str) -> int:
+    with conectar() as con:
+        return con.execute("INSERT INTO consultorios (nombre, distrito) VALUES (?, ?)", (nombre, distrito)).lastrowid
+
+
+def plantillas() -> list[tuple[int, Plantilla]]:
+    with conectar() as con:
+        filas = con.execute("SELECT * FROM plantillas ORDER BY id").fetchall()
+    return [(f["id"], Plantilla.model_validate_json(f["plantilla_json"])) for f in filas]
+
+
+def crear_plantilla(plantilla: Plantilla) -> int:
+    with conectar() as con:
+        return con.execute("INSERT INTO plantillas (plantilla_json) VALUES (?)", (plantilla.model_dump_json(),)).lastrowid
+
+
+def _con_plantilla(fila: dict) -> dict:
+    """Agrega al médico su plantilla (o None) y el vocabulario para la transcripción."""
+    texto = fila.pop("plantilla_json", None)
+    fila["plantilla"] = Plantilla.model_validate_json(texto) if texto else None
+    fila["vocabulario"] = fila["plantilla"].vocabulario if fila["plantilla"] else ""
+    return fila
+
+
+def medicos(consultorio_id: int | None = None) -> list[dict]:
+    """Los médicos, con su consultorio y su plantilla. Si se da un consultorio, solo los de ese."""
+    with conectar() as con:
+        filas = con.execute(
+            """SELECT m.*, c.nombre AS consultorio, pl.plantilla_json
+               FROM medicos m JOIN consultorios c ON c.id = m.consultorio_id
+               LEFT JOIN plantillas pl ON pl.id = m.plantilla_id
+               WHERE ? IS NULL OR m.consultorio_id = ? ORDER BY m.consultorio_id, m.id""",
+            (consultorio_id, consultorio_id),
+        ).fetchall()
+    return [_con_plantilla(dict(f)) for f in filas]
 
 
 def medico(medico_id: int = 1) -> dict:
-    """Un profesional por su id. Si no existe, el primero."""
-    return next((m for m in medicos() if m["id"] == medico_id), medicos()[0])
+    """Un médico por su id. Si no existe, el primero."""
+    todos = medicos()
+    return next((m for m in todos if m["id"] == medico_id), todos[0])
+
+
+def crear_medico(datos: dict) -> int:
+    with conectar() as con:
+        return con.execute(
+            f"INSERT INTO medicos ({', '.join(CAMPOS_MEDICO)}) VALUES ({', '.join('?' * len(CAMPOS_MEDICO))})",
+            [datos[c] for c in CAMPOS_MEDICO],
+        ).lastrowid
 
 
 def _receta_json(receta: list[Medicamento]) -> str:
@@ -161,7 +258,8 @@ def edad_texto(fecha_nacimiento: str, hoy: date | None = None) -> str:
 
 # --- Pacientes ----------------------------------------------------------------
 
-def listar_pacientes(buscar: str = "") -> list[dict]:
+def listar_pacientes(consultorio_id: int, buscar: str = "") -> list[dict]:
+    """Los pacientes de un consultorio: un consultorio nunca ve los pacientes de otro."""
     with conectar() as con:
         filas = con.execute(
             """
@@ -172,10 +270,10 @@ def listar_pacientes(buscar: str = "") -> list[dict]:
             FROM pacientes p
             JOIN historias h ON h.paciente_id = p.id
             LEFT JOIN atenciones a ON a.paciente_id = p.id
-            WHERE p.nombre LIKE ?
+            WHERE p.consultorio_id = ? AND p.nombre LIKE ?
             GROUP BY p.id ORDER BY p.nombre
             """,
-            (f"%{buscar.strip()}%",),
+            (consultorio_id, f"%{buscar.strip()}%"),
         ).fetchall()
     return [_con_historia(dict(f)) for f in filas]
 
@@ -200,7 +298,7 @@ def obtener_paciente(paciente_id: int) -> dict:
 
 
 def crear_paciente(datos: dict) -> int:
-    """Registra un paciente nuevo con su historia clínica vacía. Devuelve su id."""
+    """Registra un paciente nuevo (datos incluye su consultorio_id) con la historia vacía. Devuelve su id."""
     with conectar() as con:
         cursor = con.execute(
             f"INSERT INTO pacientes ({', '.join(CAMPOS_PACIENTE)}) VALUES ({', '.join('?' * len(CAMPOS_PACIENTE))})",
@@ -246,6 +344,7 @@ def guardar_atencion(
     historia: HistoriaClinica, firmado_por: str, consentimiento_en: str | None, cita_id: int | None = None,
     proxima_cita: tuple[date, str] | None = None, medico_id: int = 1,
     borrador: tuple[NotaAtencion, list[Medicamento]] | None = None,
+    segundos_ia: float | None = None, segundos_revision: float | None = None,
 ) -> int:
     """Guarda la atención firmada, actualiza la historia y la agenda, todo en una sola transacción.
 
@@ -255,10 +354,12 @@ def guardar_atencion(
     with conectar() as con:
         cursor = con.execute(
             """INSERT INTO atenciones (paciente_id, cita_id, fecha, transcripcion, nota_json, receta_json,
-                                       consentimiento_en, firmado_por, firmado_en, borrador_json)
-               VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)""",
+                                       consentimiento_en, firmado_por, firmado_en, borrador_json,
+                                       medico_id, segundos_ia, segundos_revision)
+               VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)""",
             (paciente_id, cita_id, fecha.isoformat(), transcripcion, nota.model_dump_json(),
-             _receta_json(receta), consentimiento_en, firmado_por, ahora, _borrador_json(borrador)),
+             _receta_json(receta), consentimiento_en, firmado_por, ahora, _borrador_json(borrador),
+             medico_id, segundos_ia, segundos_revision),
         )
         con.execute(
             "UPDATE historias SET historia_json = ?, actualizada = ? WHERE paciente_id = ?",
@@ -290,20 +391,27 @@ def _acierto_de(borrador_json: str | None, nota: NotaAtencion, receta: list[Medi
                     nota, receta)
 
 
-def acierto_reciente(firmado_por: str, dias: int = 30) -> tuple[Acierto, int]:
-    """El acierto de Ceni sumado en las atenciones de un profesional de los últimos días, y cuántas son."""
+def metricas_medico(medico_id: int, dias: int = 30) -> dict:
+    """Lo que un médico ve de su uso de Ceni en los últimos días: atenciones con IA, tiempos y acierto."""
     desde = (date.today() - timedelta(days=dias)).isoformat()
     with conectar() as con:
         filas = con.execute(
-            """SELECT nota_json, receta_json, borrador_json FROM atenciones
-               WHERE firmado_por = ? AND fecha >= ? AND borrador_json IS NOT NULL""",
-            (firmado_por, desde),
+            """SELECT a.*, p.nombre FROM atenciones a JOIN pacientes p ON p.id = a.paciente_id
+               WHERE a.medico_id = ? AND a.fecha >= ? AND a.borrador_json IS NOT NULL
+               ORDER BY a.firmado_en DESC""",
+            (medico_id, desde),
         ).fetchall()
     total = Acierto()
+    detalle = []
     for f in filas:
-        total.sumar(_acierto_de(f["borrador_json"], NotaAtencion.model_validate_json(f["nota_json"]),
-                                [Medicamento.model_validate(m) for m in json.loads(f["receta_json"])]))
-    return total, len(filas)
+        acierto = _acierto_de(f["borrador_json"], NotaAtencion.model_validate_json(f["nota_json"]),
+                              [Medicamento.model_validate(m) for m in json.loads(f["receta_json"])])
+        total.sumar(acierto)
+        detalle.append({"paciente": f["nombre"], "firmado_en": f["firmado_en"], "segundos_ia": f["segundos_ia"],
+                        "segundos_revision": f["segundos_revision"], "acierto": acierto})
+    promedio = lambda clave: (sum(d[clave] or 0 for d in detalle) / len(detalle)) if detalle else None  # noqa: E731
+    return {"atenciones": len(detalle), "acierto": total, "segundos_ia": promedio("segundos_ia"),
+            "segundos_revision": promedio("segundos_revision"), "detalle": detalle}
 
 
 # --- Agenda -----------------------------------------------------------------------

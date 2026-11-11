@@ -74,7 +74,12 @@ Por eso en Ceni el médico revisa y firma, los campos que no se dijeron quedan v
 
 Antes de cada paciente, Ceni muestra lo que el médico necesita recordar: qué pasó en la última atención, qué quedó pendiente, la medicación actual y las alergias.
 
-**Un centro, varios profesionales.** En la barra lateral se elige quién atiende: la neuropediatra o el odontólogo para pacientes especiales. Cada uno tiene su agenda y firma sus atenciones, pero la historia clínica del niño es una sola. Así el odontólogo ve la medicación, las alergias y la derivación que dejó la neuropediatra antes de atenderlo.
+**Hecho para muchos consultorios.** Ceni tiene tres niveles:
+- **Admin (Melina):** da de alta cada consultorio, sus médicos y las plantillas de cada especialidad ([`app/admin.py`](app/admin.py)).
+- **Consultorio:** tiene uno o varios médicos y solo ve sus propios pacientes.
+- **Médico:** tiene su agenda, firma sus atenciones y ve en «Mis métricas» cuánto tarda Ceni, cuánto tarda él en revisar y cuánto acierta Ceni ([`app/metricas.py`](app/metricas.py)).
+
+**Una sola historia clínica para todas las especialidades.** Todas comparten el formato de consulta externa del MINSA. La plantilla de cada especialidad (neurología, odontología, dermatología…) solo le suma sus campos propios, y la IA también los llena. En el demo, el odontólogo ve la alergia y la derivación que dejó la neuropediatra antes de atender al niño. Cada cita se agrega a Google Calendar con un clic, sin el nombre del paciente.
 
 ![Agenda del odontólogo: su siguiente paciente con la alergia y la derivación que registró la neuropediatra](docs/capturas/4-odontologo.png)
 
@@ -108,6 +113,7 @@ cp .env.example .env   # y pega tu OPENAI_API_KEY y tu GROQ_API_KEY dentro
 .venv/bin/streamlit run streamlit_app.py
 ```
 
+- En la barra lateral, «Entrar como» elige quién usa la app: el admin o un médico de cualquiera de los dos consultorios del demo. En producción, esto sería un inicio de sesión.
 - Para volver a los datos del demo, abre la app con `?reiniciar` al final de la URL. Por ejemplo: `http://localhost:8501/?reiniciar`.
 - Para probar sin micrófono, los guiones de dos consultas inventadas están en [`data/audios_demo/guiones.md`](data/audios_demo/guiones.md). También se puede pegar el texto de la consulta.
 
@@ -137,7 +143,7 @@ flowchart LR
 | Carpeta | Qué hace |
 |---|---|
 | `streamlit_app.py` | Entrada de la app: clave, base de datos, estilo, barra lateral y páginas. |
-| `app/` | Las pantallas: agenda, pacientes y ficha del paciente (`ficha.py` tiene el flujo de grabar, revisar y firmar). |
+| `app/` | Las pantallas: agenda, pacientes, ficha del paciente (`ficha.py` tiene el flujo de grabar, revisar y firmar), mis métricas y el panel de admin. |
 | `ai/` | La IA: `transcribir.py` (Whisper), `generar.py` (LLM), `esquemas.py` (los campos que debe devolver) y `prompts.py`. |
 | `backend/` | La base SQLite (`db.py`), las reglas de la receta (`reglas.py`), el PDF (`pdf.py`) y el acierto de Ceni (`acierto.py`). |
 | `data/` | `semilla.json` con los pacientes inventados. La base `ceni.db` se crea sola al arrancar. |
@@ -267,6 +273,14 @@ Este proyecto se construyó con **Claude Code** (Claude, de Anthropic).
 - sumar al odontólogo para pacientes especiales, con su propia agenda y la misma historia clínica;
 - la marca y el pedido de rediseño;
 - las entrevistas con usuarios y la revisión del código para poder explicarlo y cambiarlo.
+
+## Lo que viene
+
+- **Plantillas desde un PDF:** el médico sube su formato y Ceni arma la plantilla alineada al formato del MINSA, para que el admin la apruebe. Usaría Document AI (sesión 10) y salidas estructuradas.
+- **Sincronización con Google Calendar:** leer y escribir el calendario del médico con OAuth. Hoy cada cita se agrega con un clic.
+- **Inicio de sesión real** para cada médico y cada consultorio.
+- **Informes para el colegio y otros especialistas:** lo pidieron la neuropediatra y la pediatra de las entrevistas.
+- **Dictado al terminar un procedimiento:** pensado para odontología, como pidió la entrevista 2.
 
 ## Opcional
 

@@ -98,4 +98,7 @@ def comparar(nota_ia: NotaAtencion, receta_ia: list[Medicamento],
     clave = lambda d: f"{d.cie10 or d.descripcion} {d.tipo}"  # noqa: E731
     _comparar(r, "diagnósticos", [clave(d) for d in nota_ia.diagnosticos], [clave(d) for d in nota.diagnosticos])
     _comparar(r, "receta", [_medicamento(m) for m in receta_ia], [_medicamento(m) for m in receta])
+    firmados = {c.nombre: c.valor for c in nota.campos_especialidad}  # los campos de la plantilla, por nombre
+    for campo in nota_ia.campos_especialidad:
+        _comparar(r, campo.nombre.lower(), [campo.valor], [firmados.get(campo.nombre, "")])
     return r
