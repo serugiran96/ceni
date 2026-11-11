@@ -7,6 +7,16 @@ La app las muestra en "¿Sin micrófono?", dentro de Nueva atención.
 No hace falta leerlas palabra por palabra: Ceni está hecha para la conversación real,
 con interrupciones y muletillas.
 
+## fabricio-control-corto.m4a (unos 30 segundos, para la demo en vivo)
+
+Ya está grabado con voces de la Mac y aparece en «¿Sin micrófono?» como audio de ejemplo.
+
+**Doctora:** Hola, señora Rosa, hola Fabricio. ¿Cómo durmió este mes?
+
+**Mamá:** Bien, doctora. Ya duerme toda la noche, y ya arma frases de tres palabras.
+
+**Doctora:** Muy bien. El examen neurológico está normal. Vamos a bajar la melatonina a uno coma cinco miligramos, media tableta, cada noche, por un mes. Seguimos con terapia de lenguaje dos veces por semana. Nos vemos en dos meses.
+
 ## control-de-fabricio.mp3 (unos 2 minutos)
 
 **Doctora:** Hola, señora Rosa, hola Fabricio. ¿Cómo les fue este mes?

@@ -208,7 +208,7 @@ with nueva_tab:
                 subido = st.file_uploader(
                     "Sube un audio", type=["wav", "mp3", "m4a", "ogg", "webm", "mp4"], key=f"subido_{paciente_id}"
                 )
-                ejemplos = sorted(CARPETA_EJEMPLOS.glob("*.mp3"))
+                ejemplos = sorted([*CARPETA_EJEMPLOS.glob("*.mp3"), *CARPETA_EJEMPLOS.glob("*.m4a")])
                 ejemplo = st.selectbox(
                     "Audio de ejemplo (consulta inventada)", [None, *ejemplos],
                     format_func=lambda p: "Ninguno" if p is None else p.stem.replace("-", " ").capitalize(),
