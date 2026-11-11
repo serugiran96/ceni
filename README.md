@@ -53,7 +53,7 @@ Antes de cada paciente, Ceni muestra lo que el médico necesita recordar: qué p
 
 ## 6. Demo
 
-**URL pública:** pendiente (Streamlit Community Cloud).
+**URL pública:** https://ceni-demo.streamlit.app/ (Streamlit Community Cloud)
 
 **Cómo correrlo en tu laptop:**
 
