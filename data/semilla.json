@@ -1,14 +1,25 @@
 {
-  "_aviso": "Datos 100 % inventados para el demo de Ceni. Ningún paciente, familia ni médico es real. Las recetas son ficticias y no son una recomendación médica.",
-  "medico": {
-    "nombre": "Dra. Lucía Herrera",
-    "especialidad": "Neuropediatría",
-    "colegiatura": "CMP 000000 · RNE 000000 (ficticios)"
-  },
+  "_aviso": "Datos inventados para el demo de Ceni: los pacientes, las familias, las atenciones y las recetas no son reales. Las recetas son ficticias y no son una recomendación médica.",
+  "medicos": [
+    {
+      "id": 1,
+      "nombre": "Dra. Nattaly Rozas",
+      "especialidad": "Neuropediatría",
+      "colegiatura": "CMP 000000 · RNE 000000 (ficticios)",
+      "vocabulario": "Melatonina, metilfenidato, risperidona, TEA, TDAH, terapia ocupacional, pictogramas."
+    },
+    {
+      "id": 2,
+      "nombre": "Dr. Juan Carlos Pumayali",
+      "especialidad": "Odontología para pacientes especiales",
+      "colegiatura": "COP 000000 (ficticio)",
+      "vocabulario": "Caries, barniz de flúor, sellantes, profilaxis, cepillado, hilo dental, anestesia local, paracetamol, ibuprofeno, desensibilización, pictogramas."
+    }
+  ],
   "pacientes": [
     {
       "id": 1,
-      "nombre": "Mateo Quispe Rojas",
+      "nombre": "Fabricio Acurio",
       "fecha_nacimiento": "2021-06-14",
       "sexo": "Masculino",
       "apoderado": "Rosa Rojas (mamá)",
@@ -246,10 +257,10 @@
     },
     {
       "id": 2,
-      "nombre": "Valentina Huamán Torres",
+      "nombre": "Antonella Carpio",
       "fecha_nacimiento": "2018-03-02",
       "sexo": "Femenino",
-      "apoderado": "Jorge Huamán (papá)",
+      "apoderado": "Jorge Carpio (papá)",
       "distrito": "Santiago de Surco",
       "colegio": "3.er grado de primaria",
       "seguro": "EPS",
@@ -380,7 +391,8 @@
             ],
             "examenes_auxiliares": [],
             "interconsultas": [
-              "Continuar terapia de aprendizaje"
+              "Continuar terapia de aprendizaje",
+              "Odontología para pacientes especiales: evaluación y profilaxis"
             ],
             "indicaciones": [
               "Mantener la rutina también el fin de semana"
@@ -406,7 +418,7 @@
     },
     {
       "id": 3,
-      "nombre": "Thiago Mendoza Vargas",
+      "nombre": "Matias Umeres",
       "fecha_nacimiento": "2022-01-20",
       "sexo": "Masculino",
       "apoderado": "Lucía Vargas (mamá)",
@@ -644,7 +656,7 @@
     },
     {
       "id": 5,
-      "nombre": "Santiago Paredes León",
+      "nombre": "Estefano Benavides",
       "fecha_nacimiento": "2017-05-27",
       "sexo": "Masculino",
       "apoderado": "Ana León (mamá)",
@@ -797,32 +809,58 @@
       "paciente_id": 1,
       "en_dias": 0,
       "hora": "09:00",
-      "tipo": "Control"
+      "tipo": "Control",
+      "medico_id": 1
     },
     {
       "paciente_id": 2,
       "en_dias": 0,
       "hora": "09:40",
-      "tipo": "Control"
+      "tipo": "Control",
+      "medico_id": 1
     },
     {
       "paciente_id": 3,
       "en_dias": 0,
       "hora": "10:20",
-      "tipo": "Control"
+      "tipo": "Control",
+      "medico_id": 1
     },
     {
       "paciente_id": 4,
       "en_dias": 0,
       "hora": "11:00",
-      "tipo": "Control"
+      "tipo": "Control",
+      "medico_id": 1
     },
     {
       "paciente_id": 5,
       "en_dias": 1,
       "hora": "09:00",
-      "tipo": "Control"
+      "tipo": "Control",
+      "medico_id": 1
+    },
+    {
+      "paciente_id": 2,
+      "medico_id": 2,
+      "en_dias": 0,
+      "hora": "09:20",
+      "tipo": "Primera vez"
+    },
+    {
+      "paciente_id": 5,
+      "medico_id": 2,
+      "en_dias": 0,
+      "hora": "10:00",
+      "tipo": "Primera vez"
+    },
+    {
+      "paciente_id": 3,
+      "medico_id": 2,
+      "en_dias": 1,
+      "hora": "10:00",
+      "tipo": "Primera vez"
     }
   ],
-  "_aviso_citas": "Las citas se crean relativas al día en que arranca la app (en_dias = 0 es hoy), para que la agenda del demo nunca esté vacía."
+  "_aviso_citas": "Las citas se crean relativas al día en que arranca la app (en_dias = 0 es hoy; medico_id dice de quién es la agenda), para que la agenda del demo nunca esté vacía."
 }

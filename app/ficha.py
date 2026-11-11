@@ -97,8 +97,8 @@ paciente_id = st.session_state["paciente_id"]  # lo cambia el selector de abajo 
 paciente = db.obtener_paciente(paciente_id)
 historia, actualizada = db.historia_de(paciente_id)
 atenciones = db.atenciones_de(paciente_id)  # de la más reciente a la más antigua
-medico = db.medico()
-proxima = db.proxima_cita_de(paciente_id)
+medico = db.medico(st.session_state.get("medico_id", 1))  # quién atiende, elegido en la barra lateral
+proxima = db.proxima_cita_de(paciente_id, medico["id"])
 
 
 def receta_pdf(a: dict) -> bytes:
@@ -109,10 +109,11 @@ def receta_pdf(a: dict) -> bytes:
 
 # Si venimos de "Atender" en la agenda, la atención queda enlazada a esa cita.
 cita = db.obtener_cita(st.session_state["cita_id"]) if st.session_state.get("cita_id") else None
-if not cita or cita["paciente_id"] != paciente_id or cita["estado"] != "Programada":
+if not cita or cita["paciente_id"] != paciente_id or cita["estado"] != "Programada" or cita["medico_id"] != medico["id"]:
     cita = None
 borrador = st.session_state.get("borrador")
-if borrador and borrador["paciente_id"] != paciente_id:
+# El borrador es de un paciente y de quien lo grabó: con otro paciente u otro profesional no se muestra (ni se borra).
+if borrador and (borrador["paciente_id"] != paciente_id or borrador["medico_id"] != medico["id"]):
     borrador = None
 
 with st.container(key="heroe-paciente"):
@@ -133,7 +134,7 @@ with st.container(key="heroe-paciente"):
 firmada = st.session_state.get("recien_firmada")
 if firmada and firmada["paciente_id"] == paciente_id:
     atencion_firmada = next((a for a in atenciones if a["id"] == firmada["atencion_id"]), None)
-    siguiente = next((c for c in db.citas_entre(date.today(), date.today())
+    siguiente = next((c for c in db.citas_entre(date.today(), date.today(), medico["id"])
                       if c["estado"] == "Programada" and c["paciente_id"] != paciente_id), None)
     with st.container(key="listo-firmada"):
         estilo.html(
@@ -232,19 +233,20 @@ with nueva_tab:
                             archivo = grabado or subido
                             audio, nombre_archivo = archivo.getvalue(), archivo.name
                         vocabulario = (
-                            f"Consulta de neuropediatría de {paciente['nombre']} con {medico['nombre']}. "
+                            f"Consulta de {medico['especialidad'].lower()} de {paciente['nombre']} con {medico['nombre']}. "
                             f"Diagnósticos: {', '.join(d.descripcion for d in historia.diagnosticos)}. "
-                            "Melatonina, metilfenidato, risperidona, TEA, TDAH, terapia ocupacional, pictogramas."
+                            f"{medico['vocabulario']}"
                         )
                         texto = transcribir(audio, nombre_archivo, vocabulario)
                     else:
                         texto = escrito.strip()
                     st.write("Armando la nota, la receta y la historia clínica…")
-                    resultado = procesar_atencion(texto, paciente, historia)
+                    resultado = procesar_atencion(texto, paciente, historia, medico)
                     estado.update(label="Listo. Revisa y firma.", state="complete", expanded=False)
                 st.session_state["borrador"] = borrador = {
                     "id": st.session_state["usos_ia"],  # cambia en cada proceso: reinicia el formulario
                     "paciente_id": paciente_id,
+                    "medico_id": medico["id"],
                     "transcripcion": texto,
                     "resultado": resultado,
                     "consentimiento_en": datetime.now().isoformat(timespec="seconds"),
@@ -378,6 +380,7 @@ with nueva_tab:
                 firmado_por=medico["nombre"], consentimiento_en=borrador["consentimiento_en"],
                 cita_id=cita["id"] if cita else None,
                 proxima_cita=(fecha_control, hora_control.strftime("%H:%M")) if agendar else None,
+                medico_id=medico["id"],
             )
             st.session_state["recien_firmada"] = {
                 "paciente_id": paciente_id,

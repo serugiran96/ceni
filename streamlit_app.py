@@ -1,7 +1,7 @@
 """Punto de entrada de Ceni: `streamlit run streamlit_app.py`.
 
 Prepara la clave y la base de datos, aplica el estilo, dibuja la barra
-lateral (logo, menú y médico) y decide qué página mostrar.
+lateral (logo, menú y quién atiende) y decide qué página mostrar.
 """
 
 import os
@@ -47,6 +47,10 @@ if "reiniciar" in st.query_params:
     st.session_state.clear()
     st.query_params.clear()
 
+# Color del avatar de cada profesional en la barra lateral.
+AVATAR_MEDICO = {1: "#FFB020,#FF7A59", 2: "#38D9A9,#4DABF7"}
+
+
 paginas = [
     st.Page("app/agenda.py", title="Agenda", icon=":material/calendar_month:", default=True),
     st.Page("app/pacientes.py", title="Pacientes", icon=":material/groups:"),
@@ -61,11 +65,15 @@ with st.sidebar:
     for p in paginas:
         st.page_link(p, width="stretch")
     st.write("")
-    medico = db.medico()
+    # Cada profesional del centro tiene su agenda y firma sus atenciones; la historia clínica es una sola.
+    profesionales = {m["id"]: m for m in db.medicos()}
+    st.selectbox("¿Quién atiende?", list(profesionales), format_func=lambda i: profesionales[i]["nombre"],
+                 key="medico_id")
+    medico = profesionales[st.session_state["medico_id"]]
     nombre = medico["nombre"].split()
     estilo.html(
         '<div class="ceni-medico">'
-        '<div class="ceni-avatar" style="background:linear-gradient(135deg,#FFB020,#FF7A59)">'
+        f'<div class="ceni-avatar" style="background:linear-gradient(135deg,{AVATAR_MEDICO.get(medico["id"], "#FFB020,#FF7A59")})">'
         f'{nombre[1][0]}{nombre[-1][0]}</div>'
         f'<div><div class="ceni-nombre" style="font-size:.98rem">{medico["nombre"]}</div>'
         f'<div class="ceni-meta">{medico["especialidad"]}</div></div></div>'

@@ -41,6 +41,10 @@ Notas de las 3 conversaciones con usuarios potenciales:
 
 Antes de cada paciente, Ceni muestra lo que el médico necesita recordar: qué pasó en la última atención, qué quedó pendiente, la medicación actual y las alergias.
 
+**Un centro, varios profesionales.** En la barra lateral se elige quién atiende: la neuropediatra o el odontólogo para pacientes especiales. Cada uno tiene su agenda y firma sus atenciones, pero la historia clínica del niño es una sola. Así el odontólogo ve la medicación, las alergias y la derivación que dejó la neuropediatra antes de atenderlo.
+
+![Agenda del odontólogo: su siguiente paciente con la alergia y la derivación que registró la neuropediatra](docs/capturas/4-odontologo.png)
+
 > **Insight. Pendiente (lo escribe Melina):** lo que entendí del problema que otros no ven.
 
 ## 5. Why now
@@ -163,6 +167,7 @@ Este proyecto se construyó con **Claude Code** (Claude, de Anthropic).
 - el alcance: grabar la consulta y obtener la historia clínica, la nota y la receta para que el médico revise y firme. Descarté el plan de objetivos, los gráficos de evolución y el informe para los padres;
 - seguir el formato de consulta externa del MINSA;
 - el límite de 10 transcripciones por paciente cada 7 días;
+- sumar al odontólogo para pacientes especiales, con su propia agenda y la misma historia clínica;
 - la marca y el pedido de rediseño;
 - las entrevistas con usuarios y la revisión del código para poder explicarlo y cambiarlo.
 

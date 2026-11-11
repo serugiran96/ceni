@@ -235,7 +235,8 @@ def antes_de_empezar_html(atenciones: list[dict], historia: HistoriaClinica, max
         if maximo and len(lista_pendientes) > maximo:
             lista_pendientes = lista_pendientes[:maximo] + [("more_horiz", "gris", f"y {len(lista_pendientes) - maximo} más")]
         partes = [
-            estilo.bloque(f"Última atención · {fecha_corta(ultima['fecha'])}", estilo.texto(ultima["nota"].resumen)),
+            estilo.bloque(f"Última atención · {fecha_corta(ultima['fecha'])} · {ultima['firmado_por']}",
+                          estilo.texto(ultima["nota"].resumen)),
             estilo.bloque("Quedó pendiente", estilo.items(lista_pendientes)),
             estilo.bloque("Medicación actual", estilo.items(medicacion(ultima["receta"]), "Sin medicación")),
         ]

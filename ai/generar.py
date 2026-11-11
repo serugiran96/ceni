@@ -10,9 +10,10 @@ from ai.esquemas import HistoriaClinica, ResultadoAtencion
 from ai.prompts import ATENCION_SISTEMA
 
 
-def procesar_atencion(transcripcion: str, paciente: dict, historia: HistoriaClinica) -> ResultadoAtencion:
+def procesar_atencion(transcripcion: str, paciente: dict, historia: HistoriaClinica, profesional: dict) -> ResultadoAtencion:
     """Una sola llamada al modelo: nota de la atención + receta + lo nuevo de la historia."""
     usuario = (
+        f"Profesional que atiende: {profesional['nombre']} ({profesional['especialidad']}).\n"
         f"Paciente: {paciente['nombre']}, {paciente['edad']}, {paciente['sexo']}. "
         f"Apoderado: {paciente['apoderado']}.\n\n"
         f"Historia clínica actual (JSON):\n{historia.model_dump_json(indent=1)}\n\n"

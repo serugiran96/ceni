@@ -5,7 +5,7 @@ Tablas:
 - historias: la historia clínica acumulada de cada paciente (JSON validado por Pydantic).
 - atenciones: cada consulta, con su transcripción, su nota, su receta (JSON),
   quién la firmó y cuándo, y cuándo autorizó la familia la grabación.
-- citas: la agenda del médico.
+- citas: la agenda de cada profesional del centro (medico_id).
 - transcripciones: registro de cada vez que se procesa una consulta (para el límite semanal).
 
 Al arrancar, si la base no existe, se crea con los pacientes inventados de
@@ -24,7 +24,7 @@ CARPETA_DATOS = Path(__file__).resolve().parent.parent / "data"
 RUTA_DB = CARPETA_DATOS / "ceni.db"
 RUTA_SEMILLA = CARPETA_DATOS / "semilla.json"
 
-VERSION_ESQUEMA = 2  # súbela cuando cambien las tablas o los esquemas: la base se vuelve a crear
+VERSION_ESQUEMA = 3  # súbela cuando cambien las tablas o los esquemas: la base se vuelve a crear
 LIMITE_SEMANAL = 10  # transcripciones por paciente en los últimos 7 días
 ESTADOS_CITA = ["Programada", "Atendida", "No asistió"]
 
@@ -62,7 +62,8 @@ CREATE TABLE IF NOT EXISTS citas (
     fecha TEXT NOT NULL,
     hora TEXT NOT NULL,
     tipo TEXT NOT NULL,            -- Primera vez / Control
-    estado TEXT NOT NULL DEFAULT 'Programada'
+    estado TEXT NOT NULL DEFAULT 'Programada',
+    medico_id INTEGER NOT NULL DEFAULT 1   -- de quién es la cita (ver "medicos" en la semilla)
 );
 CREATE TABLE IF NOT EXISTS transcripciones (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -103,7 +104,7 @@ def crear_base(desde_cero: bool = False) -> None:
 
 def _cargar_semilla(con: sqlite3.Connection) -> None:
     semilla = _semilla()
-    medico = semilla["medico"]["nombre"]
+    medico = semilla["medicos"][0]["nombre"]  # las atenciones previas son de neuropediatría
     for p in semilla["pacientes"]:
         con.execute(
             f"INSERT INTO pacientes (id, {', '.join(CAMPOS_PACIENTE)}) VALUES (?, {', '.join('?' * len(CAMPOS_PACIENTE))})",
@@ -124,14 +125,19 @@ def _cargar_semilla(con: sqlite3.Connection) -> None:
     hoy = date.today()
     for c in semilla["citas"]:  # relativas a hoy, para que la agenda del demo nunca esté vacía
         con.execute(
-            "INSERT INTO citas (paciente_id, fecha, hora, tipo) VALUES (?, ?, ?, ?)",
-            (c["paciente_id"], (hoy + timedelta(days=c["en_dias"])).isoformat(), c["hora"], c["tipo"]),
+            "INSERT INTO citas (paciente_id, fecha, hora, tipo, medico_id) VALUES (?, ?, ?, ?, ?)",
+            (c["paciente_id"], (hoy + timedelta(days=c["en_dias"])).isoformat(), c["hora"], c["tipo"], c["medico_id"]),
         )
 
 
-def medico() -> dict:
-    """El médico que usa el sistema (en el demo, uno inventado)."""
-    return _semilla()["medico"]
+def medicos() -> list[dict]:
+    """Los profesionales del centro que usan Ceni (en el demo, vienen de la semilla)."""
+    return _semilla()["medicos"]
+
+
+def medico(medico_id: int = 1) -> dict:
+    """Un profesional por su id. Si no existe, el primero."""
+    return next((m for m in medicos() if m["id"] == medico_id), medicos()[0])
 
 
 def _receta_json(receta: list[Medicamento]) -> str:
@@ -234,7 +240,7 @@ def atenciones_de(paciente_id: int) -> list[dict]:
 def guardar_atencion(
     paciente_id: int, fecha: date, transcripcion: str, nota: NotaAtencion, receta: list[Medicamento],
     historia: HistoriaClinica, firmado_por: str, consentimiento_en: str | None, cita_id: int | None = None,
-    proxima_cita: tuple[date, str] | None = None,
+    proxima_cita: tuple[date, str] | None = None, medico_id: int = 1,
 ) -> int:
     """Guarda la atención firmada, actualiza la historia y la agenda, todo en una sola transacción.
 
@@ -257,22 +263,22 @@ def guardar_atencion(
             con.execute("UPDATE citas SET estado = 'Atendida' WHERE id = ?", (cita_id,))
         if proxima_cita:
             con.execute(
-                "INSERT INTO citas (paciente_id, fecha, hora, tipo) VALUES (?, ?, ?, 'Control')",
-                (paciente_id, proxima_cita[0].isoformat(), proxima_cita[1]),
+                "INSERT INTO citas (paciente_id, fecha, hora, tipo, medico_id) VALUES (?, ?, ?, 'Control', ?)",
+                (paciente_id, proxima_cita[0].isoformat(), proxima_cita[1], medico_id),
             )
     return cursor.lastrowid
 
 
 # --- Agenda -----------------------------------------------------------------------
 
-def citas_entre(desde: date, hasta: date) -> list[dict]:
-    """Citas entre dos fechas (incluidas), con el nombre, la edad y los diagnósticos del paciente."""
+def citas_entre(desde: date, hasta: date, medico_id: int) -> list[dict]:
+    """Citas de un profesional entre dos fechas (incluidas), con el nombre, la edad y los diagnósticos del paciente."""
     with conectar() as con:
         filas = con.execute(
             """SELECT c.*, p.nombre, p.fecha_nacimiento, h.historia_json
                FROM citas c JOIN pacientes p ON p.id = c.paciente_id JOIN historias h ON h.paciente_id = p.id
-               WHERE c.fecha BETWEEN ? AND ? ORDER BY c.fecha, c.hora""",
-            (desde.isoformat(), hasta.isoformat()),
+               WHERE c.fecha BETWEEN ? AND ? AND c.medico_id = ? ORDER BY c.fecha, c.hora""",
+            (desde.isoformat(), hasta.isoformat(), medico_id),
         ).fetchall()
     return [_con_historia(dict(f)) for f in filas]
 
@@ -283,11 +289,11 @@ def obtener_cita(cita_id: int) -> dict | None:
     return dict(fila) if fila else None
 
 
-def crear_cita(paciente_id: int, fecha: date, hora: str, tipo: str) -> None:
+def crear_cita(paciente_id: int, fecha: date, hora: str, tipo: str, medico_id: int) -> None:
     with conectar() as con:
         con.execute(
-            "INSERT INTO citas (paciente_id, fecha, hora, tipo) VALUES (?, ?, ?, ?)",
-            (paciente_id, fecha.isoformat(), hora, tipo),
+            "INSERT INTO citas (paciente_id, fecha, hora, tipo, medico_id) VALUES (?, ?, ?, ?, ?)",
+            (paciente_id, fecha.isoformat(), hora, tipo, medico_id),
         )
 
 
@@ -296,13 +302,13 @@ def cambiar_estado_cita(cita_id: int, estado: str) -> None:
         con.execute("UPDATE citas SET estado = ? WHERE id = ?", (estado, cita_id))
 
 
-def proxima_cita_de(paciente_id: int) -> dict | None:
-    """La próxima cita programada del paciente, desde hoy."""
+def proxima_cita_de(paciente_id: int, medico_id: int) -> dict | None:
+    """La próxima cita programada del paciente con este profesional, desde hoy."""
     with conectar() as con:
         fila = con.execute(
-            """SELECT * FROM citas WHERE paciente_id = ? AND estado = 'Programada' AND fecha >= ?
+            """SELECT * FROM citas WHERE paciente_id = ? AND medico_id = ? AND estado = 'Programada' AND fecha >= ?
                ORDER BY fecha, hora LIMIT 1""",
-            (paciente_id, date.today().isoformat()),
+            (paciente_id, medico_id, date.today().isoformat()),
         ).fetchone()
     return dict(fila) if fila else None
 

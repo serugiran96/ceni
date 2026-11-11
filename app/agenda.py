@@ -1,4 +1,4 @@
-"""Página de inicio: la agenda del médico.
+"""Página de inicio: la agenda del profesional que atiende (se elige en la barra lateral).
 
 Arriba está el siguiente paciente, con lo que el médico necesita recordar antes
 de verlo (la última atención, lo que quedó pendiente y su medicación). Al
@@ -40,7 +40,7 @@ def agendar(dia_sugerido: date) -> None:
         a_las = hora_col.time_input("Hora", value=time(9, 0), step=timedelta(minutes=20))
         tipo = st.segmented_control("Tipo", ["Control", "Primera vez"], default="Control")
         if st.form_submit_button("Agendar", type="primary", icon=":material/event_available:", width="stretch"):
-            db.crear_cita(paciente_id, fecha, a_las.strftime("%H:%M"), tipo or "Control")
+            db.crear_cita(paciente_id, fecha, a_las.strftime("%H:%M"), tipo or "Control", medico["id"])
             st.session_state["aviso_agenda"] = (
                 f"Cita agendada: {nombres[paciente_id]}, {dia_texto(fecha)} a las {a_las:%H:%M}."
             )
@@ -48,7 +48,7 @@ def agendar(dia_sugerido: date) -> None:
 
 
 st.session_state.pop("recien_firmada", None)  # el aviso de "atención firmada" solo se ve en la ficha
-medico = db.medico()
+medico = db.medico(st.session_state.get("medico_id", 1))  # quién atiende, elegido en la barra lateral
 nombre = medico["nombre"].split()
 hoy = date.today()
 
@@ -64,7 +64,7 @@ with lateral:
 
     with st.container(key="tarjeta-proximas"):
         estilo.html(estilo.titulo("Próximos 7 días", "upcoming", "sol"))
-        proximas = db.citas_entre(dia + timedelta(days=1), dia + timedelta(days=7))
+        proximas = db.citas_entre(dia + timedelta(days=1), dia + timedelta(days=7), medico["id"])
         filas = "".join(
             f'<div class="ceni-persona" style="margin-bottom:.75rem">'
             f'<div class="ceni-hora" style="{estilo.tono_css(TONO_TIPO.get(c["tipo"], "violeta"))};font-size:.95rem;min-width:64px">'
@@ -77,7 +77,7 @@ with lateral:
 
 # --- Columna principal: saludo, siguiente paciente y citas del día --------------------
 with principal:
-    citas = db.citas_entre(dia, dia)
+    citas = db.citas_entre(dia, dia, medico["id"])
     siguiente = next((c for c in citas if c["estado"] == "Programada"), None)
     por_atender = sum(c["estado"] == "Programada" for c in citas)
     estilo.encabezado(
