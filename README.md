@@ -214,7 +214,7 @@ Los costos fijos suben por escalones a medida que crece Ceni (estimado):
 | 200 | S/ 11,808 | S/ 3,160 | S/ 8,647 | S/ 375 | **S/ 8,272** | S/ 0.09 |
 
 - **Punto de equilibrio de la operación: 4 clientes.** Con 4 clientes promedio, Ceni ya paga su servidor (S/ 143 ÷ S/ 43.2 = 3.3).
-- **Punto de equilibrio con sueldo:** cada S/ 1,000 de sueldo para la founder necesita **23 clientes más**. Por ejemplo, con un sueldo de S/ 3,000 el equilibrio está en **78 clientes**.
+- **Punto de equilibrio con sueldo:** cada S/ 1,000 de sueldo para la founder necesita **24 clientes más**. Por ejemplo, con un sueldo de S/ 3,000 el equilibrio está en **79 clientes**.
 - **Costo por consulta al crecer:** el costo fijo se reparte entre más consultas, así que el costo total baja de S/ 0.83 con 1 cliente a unos S/ 0.10 desde 50 clientes. El precio se mantiene en S/ 0.50.
 
 **Supuestos:**
