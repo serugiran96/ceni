@@ -18,13 +18,38 @@ Hacemos la historia clínica, la nota de atención y la receta para neuropediatr
 
 ## 3. Problema
 
-> **Pendiente (lo escribe Melina):** quién lo sufre, cuánto le cuesta (tiempo por paciente, horas fuera de horario) y cómo lo resuelve hoy.
+**Quién lo sufre.** Los neuropediatras que atienden a niños con TEA y TDAH, en consulta privada y en hospital. A otros profesionales que atienden niños en el mismo centro les pasa lo mismo, por ejemplo a pediatras y odontólogos.
 
-Notas de las 3 conversaciones con usuarios potenciales:
+**Cuánto le cuesta.** Datos de las 3 conversaciones:
+- **Cada día, fuera de la consulta:** de 5 a 10 minutos extra por paciente para terminar la historia. Con 10 a 12 pacientes al día, son **entre 50 minutos y 2 horas diarias** ([entrevista 1](docs/research/entrevista-1.md)).
+- **Primeras consultas e informes:** de 15 a 20 minutos extra por cada primera historia, y **media hora o más por cada informe** ([entrevista 3](docs/research/entrevista-3.md)).
+- **Fuera de horario:** «Hay días en que termino saliendo tarde por eso» (entrevista 1). Los informes se hacen «en casa» (entrevista 3). «Termino el día cansadísima y todavía tengo que completar historias» ([entrevista 2](docs/research/entrevista-2.md)).
+- **Durante la consulta:** «Si estoy escribiendo, no puedo prestarles toda la atención que quisiera» (entrevista 3). El costo también lo paga la familia.
 
-- [Entrevista 1](docs/research/entrevista-1.md)
-- [Entrevista 2](docs/research/entrevista-2.md)
-- [Entrevista 3](docs/research/entrevista-3.md)
+**Cómo lo resuelven hoy.** Escriben durante la consulta y completan después:
+- en un sistema básico del consultorio;
+- en Word, un archivo por paciente;
+- en papel y Excel;
+- o en la historia electrónica del hospital, que «no siempre funciona como uno quisiera».
+
+Si una familia pierde la receta, la piden de nuevo por WhatsApp.
+
+**Lo que les preocupa:**
+- que la IA se equivoque en medicamentos o dosis;
+- que «complete cosas que yo no he dicho»;
+- la autorización de los padres para grabar;
+- la confidencialidad, porque son menores de edad.
+
+Por eso en Ceni el médico revisa y firma, los campos que no se dijeron quedan vacíos, la grabación necesita la autorización de la familia y el audio no se guarda.
+
+| | [Entrevista 1](docs/research/entrevista-1.md) | [Entrevista 2](docs/research/entrevista-2.md) | [Entrevista 3](docs/research/entrevista-3.md) |
+|---|---|---|---|
+| **Quién** | Pediatría, consultorio | Odontóloga, consultorio privado | Neuropediatra, hospital y consulta privada |
+| **Pacientes al día** | 10 a 12 | 6 a 8 | 12 a 16 por turno en el hospital; 5 o 6 en privado |
+| **Tiempo extra para documentar** | 5 a 10 min por paciente | 5 a 10 min por evolución | 15 a 20 min por primera historia; 30 min o más por informe |
+| **Cómo registra hoy** | Sistema básico del consultorio | Papel y Excel | Historia electrónica en el hospital; Word en privado |
+| **¿La usaría?** | Sí, si es fácil | Sí, si puede dictar al terminar | Sí, sobre todo en primeras consultas |
+| **Pagaría al mes** | S/ 80 a 100 | S/ 40 a 50 para probar | S/ 120 a 150 |
 
 ## 4. Solución e insight
 
@@ -128,7 +153,7 @@ flowchart LR
 | Supuesto | Valor |
 |---|---|
 | Duración de una consulta | 20 minutos |
-| Consultas por médico | 12 al día, 22 días al mes, unas 264 al mes |
+| Consultas por médico | 12 al día, 22 días al mes, unas 264 al mes (como en la entrevista 1) |
 | Entrada al LLM por consulta | unos 8,000 tokens: instrucciones, esquema, historia y transcripción |
 | Salida del LLM por consulta | unos 1,500 tokens: nota, receta y datos nuevos |
 
@@ -141,6 +166,16 @@ flowchart LR
 | Servidor | Streamlit Community Cloud es gratis para el demo. En producción, un servidor pequeño de US$ 10 a 25 al mes se reparte entre todos los médicos. | — |
 
 - **El 95% del costo es la transcripción.** Si se cambia a `gpt-4o-mini-transcribe` (US$ 0.003 por minuto), el costo baja a unos US$ 0.07 por consulta, unos US$ 17 por médico al mes.
+**Datos para decidir el precio.** Se compara el costo de IA de cada perfil de las entrevistas con lo que dijo que pagaría. El tipo de cambio de referencia es S/ 3.75 por dólar.
+
+| Perfil (entrevista) | Uso al mes | Costo de IA con whisper-1 | Con gpt-4o-mini-transcribe | Pagaría |
+|---|---|---:|---:|---:|
+| Pediatría (1): 12 consultas de 20 min al día | 5,280 min de audio | ≈ S/ 124 | ≈ S/ 65 | S/ 80 a 100 |
+| Neuropediatría privada (3): 6 consultas de 30 min al día | 3,960 min de audio | ≈ S/ 92 | ≈ S/ 47 | S/ 120 a 150 |
+| Odontología (2): dictado de 2 min al terminar, 8 pacientes al día | 352 min de audio | ≈ S/ 12 | ≈ S/ 8 | S/ 40 a 50 |
+
+Con whisper-1, el plan de pediatría pierde plata. El de neuropediatría y el de dictado dejan margen. Por eso el precio debería ir por perfil o por minutos, y conviene cambiar a un modelo de transcripción más barato.
+
 - **Las cuentas cambian si cambian los precios.** Son precios de lista de OpenAI de noviembre de 2026. Algunas fuentes dicen que whisper-1 se retirará de la API en 2027: hay que revisar la página de deprecaciones de OpenAI.
 
 ## 8. Herramientas del curso
