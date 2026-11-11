@@ -75,7 +75,7 @@ class Medicamento(BaseModel):
     medicamento: str = Field(description="Denominación Común Internacional (DCI) y concentración, p. ej. 'Melatonina 3 mg'.")
     forma_farmaceutica: str = Field(description="Tableta, jarabe, gotas, cápsula... Vacío si no se dijo.")
     via: str = Field(description="Vía de administración (oral, sublingual...). Vacío si no se dijo.")
-    dosis: str = Field(description="Cuánto toma cada vez, p. ej. '1 tableta'.")
+    dosis: str = Field(description="Cuánto toma cada vez, como lo dijo el médico, p. ej. '1.5 mg (media tableta)' o '1 tableta'.")
     frecuencia: str = Field(description="Cada cuánto y a qué hora.")
     duracion: str = Field(description="Por cuánto tiempo. Vacío si no se dijo.")
     cantidad: str = Field(description="Cantidad total a dispensar, p. ej. '30 tabletas'. Vacío si no se dijo.")
