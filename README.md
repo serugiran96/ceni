@@ -172,20 +172,42 @@ El profesional paga solo lo que usa y sabe de antemano lo máximo que va a pagar
 
 Con whisper-1 de OpenAI la misma consulta costaba US$ 0.126 (S/ 0.47): la transcripción era el 95% del costo. Por eso Ceni transcribe en Groq, con el mismo Whisper, y deja whisper-1 solo como respaldo.
 
-**Margen de contribución por profesional al mes:** lo que paga, menos IGV, comisión de cobro e IA.
+**Estructura de costos.** Tiene tres capas: lo que cuesta cada consulta, lo que deja cada profesional al mes y los costos fijos que hay que cubrir.
 
-| Perfil | Paga | Ingreso neto (sin IGV ni comisión de 4%) | Costo de IA | Margen de contribución |
-|---|---:|---:|---:|---:|
-| Pediatría | S/ 99 | S/ 79.9 | S/ 18.8 | **S/ 61.1 (76%)** |
-| Neuropediatría privada | S/ 66 | S/ 53.3 | S/ 13.2 | **S/ 40.2 (75%)** |
-| Odontología, dictado | S/ 44 | S/ 35.5 | S/ 3.6 | **S/ 32.0 (90%)** |
+*1. Una consulta de 20 minutos, a S/ 0.50:*
 
-- **Costos fijos:** con ese margen se pagan el servidor, la base de datos con respaldo cifrado y el dominio. Son unos US$ 38 al mes (estimado): con 10 profesionales salen a unos S/ 14 por profesional. Para el demo, Streamlit Community Cloud es gratis.
-- **Supuestos:**
-  - 22 días de atención al mes y unos 225 tokens por minuto de conversación;
-  - tipo de cambio de S/ 3.75;
-  - comisión de cobro de 4% (cambia según la pasarela de pago);
-  - precios de lista de noviembre de 2026, de fuentes secundarias.
+| Concepto | S/ |
+|---|---:|
+| Precio con IGV | 0.500 |
+| − IGV (18%, va a SUNAT) | −0.076 |
+| **= Ingreso** | **0.424** |
+| − Comisión de cobro (4% del precio) | −0.020 |
+| − Transcripción: Whisper large-v3-turbo en Groq, 20 min | −0.050 |
+| − Nota, receta e historia: gpt-4.1-mini | −0.021 |
+| − Reprocesos: 10% de las consultas se vuelven a procesar | −0.007 |
+| **= Margen de contribución** | **0.325 (77% del ingreso)** |
+
+*2. Cada profesional al mes, con la tarifa y el tope:*
+
+| Perfil (entrevista) | Paga | Ingreso sin IGV | Comisión | IA y reprocesos | Margen de contribución |
+|---|---:|---:|---:|---:|---:|
+| Pediatría (1): 264 consultas | S/ 99 | S/ 83.9 | S/ 4.0 | S/ 20.7 | **S/ 59.3 (71%)** |
+| Neuropediatría privada (3): 132 consultas | S/ 66 | S/ 55.9 | S/ 2.6 | S/ 14.5 | **S/ 38.8 (69%)** |
+| Odontología (2): 176 dictados | S/ 44 | S/ 37.3 | S/ 1.8 | S/ 3.9 | **S/ 31.6 (85%)** |
+
+*3. Costos fijos y punto de equilibrio:*
+- **Presupuesto de costos fijos:** US$ 38 al mes, unos **S/ 143**. Incluye servidor y base de datos (US$ 25), respaldo cifrado (US$ 5) y dominio y correo (US$ 8). Para el demo, Streamlit Community Cloud es gratis.
+- **Punto de equilibrio:** con **3 profesionales** como el de la entrevista 1, Ceni ya cubre sus costos fijos (S/ 143 ÷ S/ 59.3 = 2.4).
+- **Costo fijo por consulta:** depende de cuántos lo usen. Con 1 profesional son S/ 0.54 y la consulta pierde plata. Con 10 son S/ 0.05, y quedan **S/ 0.27 de utilidad** por consulta. Con 100 son S/ 0.005.
+
+**Supuestos:**
+- 22 días de atención al mes;
+- unos 225 tokens por minuto de conversación;
+- tipo de cambio de S/ 3.75;
+- comisión de cobro de 4%, que cambia según la pasarela de pago;
+- precios de lista de noviembre de 2026, de fuentes secundarias.
+
+No incluye el tiempo de la founder, el soporte ni lo que cuesta conseguir clientes.
 
 ## 8. Herramientas del curso
 
