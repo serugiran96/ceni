@@ -5,12 +5,18 @@ lateral (logo, menú y médico) y decide qué página mostrar.
 """
 
 import os
+import time
 from pathlib import Path
 
 import streamlit as st
 
 from app import estilo
 from backend import db
+
+# Streamlit Cloud corre en hora UTC: a las 7 p. m. de Lima allá ya es el día
+# siguiente. Fijamos la hora de Lima para que "hoy", las citas y las firmas cuadren.
+os.environ["TZ"] = "America/Lima"
+time.tzset()
 
 ASSETS = Path(__file__).resolve().parent / "assets"
 
