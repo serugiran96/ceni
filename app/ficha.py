@@ -28,7 +28,7 @@ from ai.esquemas import (HISTORIA_VACIA, CampoEspecialidad, TIPOS_DIAGNOSTICO, D
 from ai.generar import procesar_atencion
 from ai.transcribir import transcribir
 from app import estilo
-from app.formato import (TITULOS_FUNCIONES, TITULOS_HISTORIA, antes_de_empezar_html, chips_paciente, cuando_texto,
+from app.formato import (TITULOS_FUNCIONES, TITULOS_HISTORIA, antes_de_empezar_html, nota_texto, chips_paciente, cuando_texto,
                          dia_texto, duracion_texto, fecha_texto, historia_html, momento_texto, mostrar_atencion,
                          receta_html, signos_html)
 from backend import db
@@ -500,6 +500,10 @@ with atenciones_tab:
                         mime="application/pdf", icon=":material/picture_as_pdf:", key=f"pdf_{a['id']}",
                         on_click="ignore", type="primary",
                     )
+                # Como Noa Notes: la nota se puede pegar en cualquier otra historia clínica (la del hospital, por ejemplo).
+                with st.popover("Copiar la nota", icon=":material/content_copy:"):
+                    st.caption("Usa el ícono de copiar, arriba a la derecha, y pégala en tu historia clínica.")
+                    st.code(nota_texto(a["nota"], a["receta"]), language=None, wrap_lines=True)
                 if a["transcripcion"]:
                     with st.popover("Transcripción", icon=":material/subject:"):
                         st.write(a["transcripcion"])

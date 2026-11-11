@@ -189,6 +189,35 @@ def mostrar_atencion(nota: NotaAtencion, receta: list[Medicamento]) -> None:
         )
 
 
+def nota_texto(nota: NotaAtencion, receta: list[Medicamento]) -> str:
+    """La atención en texto simple, para copiarla y pegarla en cualquier historia clínica."""
+    def lista(titulo: str, items: list[str]) -> list[str]:
+        return [f"{titulo}:", *[f"- {x}" for x in items], ""] if items else []
+
+    signos = {"peso_kg": "Peso (kg)", "talla_cm": "Talla (cm)", "perimetro_cefalico_cm": "Perímetro cefálico (cm)",
+              "temperatura_c": "Temperatura (°C)", "frecuencia_cardiaca": "FC (lpm)", "frecuencia_respiratoria": "FR (rpm)"}
+    funciones = [f"{TITULOS_FUNCIONES[c]}: {v}" for c, v in nota.funciones_biologicas.model_dump().items() if v]
+    vitales = [f"{signos[c]}: {_num(v)}" for c, v in nota.signos_vitales.model_dump().items() if v is not None]
+    if (valor := imc(nota.signos_vitales)) is not None:
+        vitales.append(f"IMC: {_num(valor)}")
+    lineas = [f"Motivo de consulta: {nota.motivo}"]
+    if nota.tiempo_enfermedad:
+        lineas.append(f"Tiempo de enfermedad: {nota.tiempo_enfermedad}")
+    lineas += [""] + lista("Relato", nota.relato) + lista("Funciones biológicas", funciones)
+    lineas += lista("Funciones vitales y antropometría", vitales) + lista("Examen físico", nota.examen)
+    lineas += [f"{c.nombre}: {c.valor}" for c in nota.campos_especialidad if c.valor]
+    if any(c.valor for c in nota.campos_especialidad):
+        lineas.append("")
+    lineas += lista("Diagnósticos", [f"{d.cie10 or 'Sin código'} {d.descripcion} ({TIPOS_DIAGNOSTICO[d.tipo]})"
+                                     for d in nota.diagnosticos])
+    lineas += lista("Tratamiento", [f"{m.medicamento}: {linea_medicamento(m)}" for m in receta])
+    lineas += lista("Exámenes auxiliares", nota.examenes_auxiliares)
+    lineas += lista("Interconsultas y terapias", nota.interconsultas) + lista("Indicaciones", nota.indicaciones)
+    if nota.proximo_control:
+        lineas.append(f"Próximo control: {nota.proximo_control}")
+    return "\n".join(lineas).strip()
+
+
 def historia_html(historia: HistoriaClinica, campos: list[str]) -> str:
     partes = []
     for campo in campos:

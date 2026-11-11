@@ -1,6 +1,6 @@
 # Ceni
 
-**Hacemos la historia clínica, la nota de atención y la receta para neuropediatras que atienden a niños con TEA y TDAH, mediante la grabación de la consulta, Whisper y un LLM con salidas estructuradas.**
+**Hacemos la historia clínica, la nota de atención y la receta para médicos de consultorio de cualquier especialidad, mediante la grabación de la consulta, Whisper y un LLM con salidas estructuradas. Empezamos por un centro de neurología infantil.**
 
 El médico revisa, corrige y firma: **Ceni documenta, no diagnostica.** Todos los pacientes de este repositorio son inventados.
 
@@ -10,7 +10,7 @@ El médico revisa, corrige y firma: **Ceni documenta, no diagnostica.** Todos lo
 
 ## 1. One-liner
 
-Hacemos la historia clínica, la nota de atención y la receta para neuropediatras que atienden a niños con TEA y TDAH, mediante la grabación de la consulta, Whisper y un LLM con salidas estructuradas.
+Hacemos la historia clínica, la nota de atención y la receta para médicos de consultorio de cualquier especialidad, mediante la grabación de la consulta, Whisper y un LLM con salidas estructuradas. Empezamos por un centro de neurología infantil.
 
 ## 2. Founder
 
@@ -61,6 +61,19 @@ Por eso en Ceni el médico revisa y firma, los campos que no se dijeron quedan v
 ## 4. Solución e insight
 
 **Cómo llegamos a esta solución.** Antes de construir hicimos un [benchmark de 8 plataformas](docs/benchmark.md). Revisamos los sistemas de gestión para médicos más usados en la región (Doctoralia con Noa Notes, Doctocliq y Medilink) y los mejores asistentes con IA del mundo (Abridge, Dragon Copilot, Nabla, Heidi y Freed). También revisamos la normativa peruana: el formato de consulta externa (NTS 139-MINSA/2018), la receta (Ley 29459), los psicotrópicos (D. S. 023-2001-SA), los datos personales (Ley 29733) y la historia clínica electrónica (Ley 30024). Ninguna de esas plataformas junta IA en español del Perú, el formato del MINSA, la receta peruana y el pago por consulta.
+
+**Frente a Noa Notes de Doctoralia**, el competidor más cercano en el Perú (según sus fuentes públicas):
+
+| | Noa Notes | Ceni |
+|---|:-:|:-:|
+| Escucha la consulta y arma la nota | Sí | Sí |
+| Plantillas por especialidad | Sí | Sí |
+| Funciona con cualquier historia clínica (copiar y pegar la nota) | Sí | Sí |
+| El audio no se guarda | Se borra tras un tiempo | Sí, nunca se guarda |
+| Formato de consulta externa del MINSA y receta peruana con alertas | No encontrado | Sí |
+| Mide cuánto acertó la IA en cada atención | No encontrado | Sí |
+| Precio en el Perú | Sin precio público | S/ 0.50 por consulta, tope de S/ 99 al mes |
+| Llamadas con IA para citas (NOA Booking) y evidencia científica (NOA Evidence) | Sí | Lo que viene |
 
 **Solución.** Con el permiso de la familia, el neuropediatra graba la consulta completa, sin cambiar su forma de atender. Ceni:
 
@@ -152,6 +165,8 @@ flowchart LR
 | `docs/` | Entrevistas, benchmark de la competencia y capturas. |
 
 ### Modelos y APIs, y por qué
+
+Los modelos se eligieron con una [evaluación de 5 modelos de transcripción y 5 de texto](docs/evaluacion.md) (`evaluacion/evaluar_modelos.py`), con los mismos casos, midiendo acierto, datos inventados, tiempo y costo.
 
 | Pieza | Qué usamos | Por qué |
 |---|---|---|
@@ -254,6 +269,8 @@ No incluye el tiempo de la founder, el soporte ni lo que cuesta conseguir client
 |---|---|---|---|
 | **De la voz al texto con Whisper** (large-v3-turbo en Groq) | 13 | [`ai/transcribir.py`](ai/transcribir.py), [`ai/cliente.py`](ai/cliente.py) | Lo que el médico necesita documentar está en una conversación. Mientras atiende a un niño no puede escribir, y dictar después le quita el mismo tiempo. Grabar la consulta no cambia su forma de trabajar. |
 | **LLMs con salidas estructuradas** | 08 | [`ai/generar.py`](ai/generar.py), [`ai/esquemas.py`](ai/esquemas.py), [`ai/prompts.py`](ai/prompts.py) | Una historia clínica no es un resumen: son campos (diagnósticos CIE-10, signos vitales, medicamentos con dosis). El esquema obliga al modelo a devolver esos campos. Pydantic los valida y `fusionar_historia` (en `esquemas.py`) agrega lo nuevo sin borrar lo anterior. |
+
+**Además, evaluación de modelos (sesión 12, despliegue y evaluación):** [`evaluacion/evaluar_modelos.py`](evaluacion/evaluar_modelos.py) compara 5 modelos de transcripción y 5 de texto con los mismos casos. Whisper turbo en Groq escribió bien los 22 términos clínicos por S/ 0.05 la consulta, y gpt-4.1-mini acertó 20 de 20 datos sin inventar nada ([resultados](docs/evaluacion.md)).
 
 ## 9. Qué hizo el agente
 
