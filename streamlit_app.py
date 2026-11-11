@@ -33,13 +33,15 @@ except Exception:  # en la laptop no hay secrets.toml: se usa el .env
     pass
 
 
-@st.cache_resource  # se ejecuta una sola vez por servidor, no en cada clic
-def iniciar_base() -> bool:
-    db.crear_base()
+@st.cache_resource  # se ejecuta una vez por servidor y por versión de la base, no en cada clic
+def iniciar_base(version: int) -> bool:
+    db.crear_base()  # si la base es de otra versión, la vuelve a crear con la semilla
     return True
 
 
-iniciar_base()
+# La versión va como argumento: cuando sube (p. ej., al agregar una columna), la caché
+# no sirve y la base se recrea, aunque Streamlit Cloud actualice el código sin reiniciar.
+iniciar_base(db.VERSION_ESQUEMA)
 
 # Para volver a los datos del demo antes de presentar: abrir la app con ?reiniciar
 if "reiniciar" in st.query_params:
