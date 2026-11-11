@@ -6,14 +6,25 @@ lateral (logo, menú y quién entra: el admin o un médico) y decide qué págin
 
 import base64
 import os
+import sys
 import time
 from html import escape
 from pathlib import Path
 
 import streamlit as st
 
-from app import estilo
-from backend import db
+# Streamlit Cloud baja el código nuevo sin reiniciar el servidor, y a veces sigue usando
+# la versión vieja de nuestros módulos (ImportError). Si algún .py de app/, ai/ o backend/
+# cambió desde la última vez, los sacamos de memoria para que se vuelvan a importar.
+CARPETA = Path(__file__).resolve().parent
+VERSION_CODIGO = max(p.stat().st_mtime for carpeta in ("app", "ai", "backend") for p in (CARPETA / carpeta).glob("*.py"))
+if getattr(sys, "_ceni_version_codigo", None) != VERSION_CODIGO:
+    for modulo in [m for m in sys.modules if m.split(".")[0] in ("app", "ai", "backend")]:
+        del sys.modules[modulo]
+    sys._ceni_version_codigo = VERSION_CODIGO
+
+from app import estilo  # noqa: E402  (después de limpiar los módulos viejos)
+from backend import db  # noqa: E402
 
 # Streamlit Cloud corre en hora UTC: a las 7 p. m. de Lima allá ya es el día
 # siguiente. Fijamos la hora de Lima para que "hoy", las citas y las firmas cuadren.
