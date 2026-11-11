@@ -111,12 +111,17 @@ with principal:
         st.success("Atendiste todas las citas de este día.", icon=":material/celebration:")
 
     st.write("")
-    estilo.html(estilo.cifras([
+    cifras = [
         (str(len(citas)), "", "citas", "violeta"),
         (str(por_atender), "", "por atender", "coral"),
         (str(sum(c["estado"] == "Atendida" for c in citas)), "", "atendidas", "menta"),
         (str(len(proximas)), "", "en los próximos 7 días", "sol"),
-    ]))
+    ]
+    # Cuánto acertó Ceni en las atenciones que firmó este profesional en los últimos 30 días.
+    acierto, firmadas = db.acierto_reciente(medico["nombre"])
+    if firmadas and acierto.total:
+        cifras.append((f"{acierto.porcentaje:.0%}", "", f"acierto de Ceni en {firmadas} atenciones (30 días)", "cielo"))
+    estilo.html(estilo.cifras(cifras))
     st.write("")
     estilo.html(estilo.titulo(f"Agenda de {cuando_texto(dia)}", "event_note", "violeta", f"{len(citas)} citas"))
     if not citas:

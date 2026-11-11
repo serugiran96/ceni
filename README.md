@@ -63,6 +63,7 @@ Por eso en Ceni el médico revisa y firma, los campos que no se dijeron quedan v
 3. **Junta los datos nuevos** con la historia clínica sin borrar nada de lo anterior.
 4. **Avisa** con reglas fijas, sin IA, cuando un medicamento necesita receta especial de psicotrópicos o cuando choca con una alergia registrada.
 5. **Espera la firma del médico.** Él revisa, corrige y firma. Recién entonces se guarda, se agenda el próximo control y sale la receta en PDF.
+6. **Mide cuánto acertó.** Al firmar, compara su borrador con lo que firmó el médico, dato por dato, sin usar IA. El médico sabe qué se dijo, así que lo que firma es la respuesta correcta. Muestra algo como «Ceni acertó 21 de 24 datos (88%): corregiste 1, agregaste 1, borraste 1». En la agenda se ve el acierto de los últimos 30 días ([`backend/acierto.py`](backend/acierto.py)).
 
 Antes de cada paciente, Ceni muestra lo que el médico necesita recordar: qué pasó en la última atención, qué quedó pendiente, la medicación actual y las alergias.
 
@@ -124,7 +125,7 @@ flowchart LR
 | `streamlit_app.py` | Entrada de la app: clave, base de datos, estilo, barra lateral y páginas. |
 | `app/` | Las pantallas: agenda, pacientes y ficha del paciente (`ficha.py` tiene el flujo de grabar, revisar y firmar). |
 | `ai/` | La IA: `transcribir.py` (Whisper), `generar.py` (LLM), `esquemas.py` (los campos que debe devolver) y `prompts.py`. |
-| `backend/` | La base SQLite (`db.py`), las reglas de la receta (`reglas.py`) y el PDF (`pdf.py`). |
+| `backend/` | La base SQLite (`db.py`), las reglas de la receta (`reglas.py`), el PDF (`pdf.py`) y el acierto de Ceni (`acierto.py`). |
 | `data/` | `semilla.json` con los pacientes inventados. La base `ceni.db` se crea sola al arrancar. |
 | `docs/` | Entrevistas, benchmark de la competencia y capturas. |
 

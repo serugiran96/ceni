@@ -32,6 +32,7 @@ from app.formato import (TITULOS_FUNCIONES, TITULOS_HISTORIA, antes_de_empezar_h
                          dia_texto, duracion_texto, fecha_texto, historia_html, momento_texto, mostrar_atencion,
                          receta_html, signos_html)
 from backend import db
+from backend.acierto import Acierto, comparar
 from backend.pdf import receta_a_pdf
 from backend.reglas import alertas_receta
 
@@ -101,6 +102,16 @@ medico = db.medico(st.session_state.get("medico_id", 1))  # quién atiende, eleg
 proxima = db.proxima_cita_de(paciente_id, medico["id"])
 
 
+def acierto_texto(acierto: Acierto) -> str:
+    """P. ej.: 'Ceni acertó 16 de 18 datos (89%): corregiste 1, agregaste 1.'"""
+    if not acierto.total:
+        return "Ceni no propuso datos en esta atención."
+    cambios = [f"{verbo} {n}" for verbo, n in (("corregiste", acierto.corregidos), ("agregaste", acierto.agregados),
+                                               ("borraste", acierto.borrados)) if n]
+    detalle = ", ".join(cambios) if cambios else "no cambiaste nada"
+    return f"Ceni acertó {acierto.acertados} de {acierto.total} datos ({acierto.porcentaje:.0%}): {detalle}."
+
+
 def receta_pdf(a: dict) -> bytes:
     """La receta de una atención, en PDF."""
     return receta_a_pdf(a["receta"], paciente, medico, fecha_texto(a["fecha"]), a["nota"].diagnosticos,
@@ -142,6 +153,8 @@ if firmada and firmada["paciente_id"] == paciente_id:
             + f'<p class="ceni-texto">Ceni armó el borrador en <b>{duracion_texto(firmada["segundos_ia"])}</b> '
             f'y tú lo revisaste y firmaste en <b>{duracion_texto(firmada["segundos_revision"])}</b>. '
             f'{escape(firmada["detalle"])}</p>'
+            + f'<p class="ceni-texto" style="margin-top:.35rem"><b>{escape(firmada["acierto"])}</b>'
+            + (f' Cambiaste: {escape(", ".join(firmada["cambios"]))}.' if firmada["cambios"] else "") + "</p>"
         )
         with st.container(horizontal=True):
             if atencion_firmada and atencion_firmada["receta"]:
@@ -376,18 +389,22 @@ with nueva_tab:
                 HistoriaClinica(**campos_historia, diagnosticos=propuesta.diagnosticos),
                 HISTORIA_VACIA.model_copy(update={"diagnosticos": diagnosticos}),
             )
+            # Cuánto acertó Ceni: su borrador contra lo que firma el médico (que sabe qué se dijo).
+            acierto = comparar(resultado.atencion, resultado.receta, nota_final, receta)
             atencion_id = db.guardar_atencion(
                 paciente_id, fecha, borrador["transcripcion"], nota_final, receta, historia_final,
                 firmado_por=medico["nombre"], consentimiento_en=borrador["consentimiento_en"],
                 cita_id=cita["id"] if cita else None,
                 proxima_cita=(fecha_control, hora_control.strftime("%H:%M")) if agendar else None,
-                medico_id=medico["id"],
+                medico_id=medico["id"], borrador=(resultado.atencion, resultado.receta),
             )
             st.session_state["recien_firmada"] = {
                 "paciente_id": paciente_id,
                 "atencion_id": atencion_id,
                 "segundos_ia": borrador["segundos_ia"],
                 "segundos_revision": monotonic() - borrador["listo_en"],
+                "acierto": acierto_texto(acierto),
+                "cambios": acierto.cambios,
                 "detalle": "La historia clínica se actualizó"
                 + (f" y el próximo control quedó agendado para el {dia_texto(fecha_control)}." if agendar else "."),
             }
@@ -472,6 +489,7 @@ with atenciones_tab:
                 st.caption(
                     f"Firmado por {a['firmado_por']} el {momento_texto(a['firmado_en'])} · "
                     f"Autorización de la familia: {momento_texto(a['consentimiento_en'])}"
+                    + (f" · {acierto_texto(a['acierto'])}" if a["acierto"] else "")
                 )
 
 # --- Datos personales ----------------------------------------------------------------

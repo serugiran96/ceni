@@ -4,7 +4,8 @@ Tablas:
 - pacientes: datos personales.
 - historias: la historia clínica acumulada de cada paciente (JSON validado por Pydantic).
 - atenciones: cada consulta, con su transcripción, su nota, su receta (JSON),
-  quién la firmó y cuándo, y cuándo autorizó la familia la grabación.
+  quién la firmó y cuándo, cuándo autorizó la familia la grabación y el
+  borrador que propuso la IA (para medir cuánto acertó Ceni).
 - citas: la agenda de cada profesional del centro (medico_id).
 - transcripciones: registro de cada vez que se procesa una consulta (para el límite semanal).
 
@@ -19,12 +20,13 @@ from datetime import date, datetime, timedelta
 from pathlib import Path
 
 from ai.esquemas import HISTORIA_VACIA, HistoriaClinica, Medicamento, NotaAtencion
+from backend.acierto import Acierto, comparar
 
 CARPETA_DATOS = Path(__file__).resolve().parent.parent / "data"
 RUTA_DB = CARPETA_DATOS / "ceni.db"
 RUTA_SEMILLA = CARPETA_DATOS / "semilla.json"
 
-VERSION_ESQUEMA = 4  # súbela cuando cambien las tablas, los esquemas o la semilla: la base se vuelve a crear
+VERSION_ESQUEMA = 5  # súbela cuando cambien las tablas, los esquemas o la semilla: la base se vuelve a crear
 LIMITE_SEMANAL = 10  # transcripciones por paciente en los últimos 7 días
 ESTADOS_CITA = ["Programada", "Atendida", "No asistió"]
 
@@ -54,7 +56,8 @@ CREATE TABLE IF NOT EXISTS atenciones (
     receta_json TEXT NOT NULL,
     consentimiento_en TEXT,        -- cuándo marcó el médico que la familia autorizó grabar
     firmado_por TEXT NOT NULL,
-    firmado_en TEXT NOT NULL
+    firmado_en TEXT NOT NULL,
+    borrador_json TEXT             -- lo que propuso la IA antes de que el médico corrigiera
 );
 CREATE TABLE IF NOT EXISTS citas (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -233,6 +236,7 @@ def atenciones_de(paciente_id: int) -> list[dict]:
         a = dict(f)
         a["nota"] = NotaAtencion.model_validate_json(a.pop("nota_json"))
         a["receta"] = [Medicamento.model_validate(m) for m in json.loads(a.pop("receta_json"))]
+        a["acierto"] = _acierto_de(a.pop("borrador_json"), a["nota"], a["receta"])
         atenciones.append(a)
     return atenciones
 
@@ -241,6 +245,7 @@ def guardar_atencion(
     paciente_id: int, fecha: date, transcripcion: str, nota: NotaAtencion, receta: list[Medicamento],
     historia: HistoriaClinica, firmado_por: str, consentimiento_en: str | None, cita_id: int | None = None,
     proxima_cita: tuple[date, str] | None = None, medico_id: int = 1,
+    borrador: tuple[NotaAtencion, list[Medicamento]] | None = None,
 ) -> int:
     """Guarda la atención firmada, actualiza la historia y la agenda, todo en una sola transacción.
 
@@ -250,10 +255,10 @@ def guardar_atencion(
     with conectar() as con:
         cursor = con.execute(
             """INSERT INTO atenciones (paciente_id, cita_id, fecha, transcripcion, nota_json, receta_json,
-                                       consentimiento_en, firmado_por, firmado_en)
-               VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)""",
+                                       consentimiento_en, firmado_por, firmado_en, borrador_json)
+               VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)""",
             (paciente_id, cita_id, fecha.isoformat(), transcripcion, nota.model_dump_json(),
-             _receta_json(receta), consentimiento_en, firmado_por, ahora),
+             _receta_json(receta), consentimiento_en, firmado_por, ahora, _borrador_json(borrador)),
         )
         con.execute(
             "UPDATE historias SET historia_json = ?, actualizada = ? WHERE paciente_id = ?",
@@ -267,6 +272,38 @@ def guardar_atencion(
                 (paciente_id, proxima_cita[0].isoformat(), proxima_cita[1], medico_id),
             )
     return cursor.lastrowid
+
+
+def _borrador_json(borrador: tuple[NotaAtencion, list[Medicamento]] | None) -> str | None:
+    if not borrador:
+        return None
+    nota, receta = borrador
+    return json.dumps({"nota": nota.model_dump(), "receta": [m.model_dump() for m in receta]}, ensure_ascii=False)
+
+
+def _acierto_de(borrador_json: str | None, nota: NotaAtencion, receta: list[Medicamento]) -> Acierto | None:
+    """Cuánto acertó Ceni en esta atención. None si no tiene borrador (p. ej., las de la semilla)."""
+    if not borrador_json:
+        return None
+    b = json.loads(borrador_json)
+    return comparar(NotaAtencion.model_validate(b["nota"]), [Medicamento.model_validate(m) for m in b["receta"]],
+                    nota, receta)
+
+
+def acierto_reciente(firmado_por: str, dias: int = 30) -> tuple[Acierto, int]:
+    """El acierto de Ceni sumado en las atenciones de un profesional de los últimos días, y cuántas son."""
+    desde = (date.today() - timedelta(days=dias)).isoformat()
+    with conectar() as con:
+        filas = con.execute(
+            """SELECT nota_json, receta_json, borrador_json FROM atenciones
+               WHERE firmado_por = ? AND fecha >= ? AND borrador_json IS NOT NULL""",
+            (firmado_por, desde),
+        ).fetchall()
+    total = Acierto()
+    for f in filas:
+        total.sumar(_acierto_de(f["borrador_json"], NotaAtencion.model_validate_json(f["nota_json"]),
+                                [Medicamento.model_validate(m) for m in json.loads(f["receta_json"])]))
+    return total, len(filas)
 
 
 # --- Agenda -----------------------------------------------------------------------
