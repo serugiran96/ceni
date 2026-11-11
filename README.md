@@ -196,10 +196,26 @@ Con whisper-1 de OpenAI la misma consulta costaba US$ 0.126 (S/ 0.47): la transc
 | Neuropediatría privada (3): 132 consultas | S/ 66 | S/ 55.9 | S/ 2.6 | S/ 14.5 | **S/ 38.8 (69%)** |
 | Odontología (2): 176 dictados | S/ 44 | S/ 37.3 | S/ 1.8 | S/ 3.9 | **S/ 31.6 (85%)** |
 
-*3. Costos fijos y punto de equilibrio:*
-- **Presupuesto de costos fijos:** US$ 38 al mes, unos **S/ 143**. Incluye servidor y base de datos (US$ 25), respaldo cifrado (US$ 5) y dominio y correo (US$ 8). Para el demo, Streamlit Community Cloud es gratis.
-- **Punto de equilibrio:** con **3 profesionales** como el de la entrevista 1, Ceni ya cubre sus costos fijos (S/ 143 ÷ S/ 59.3 = 2.4).
-- **Costo fijo por consulta:** depende de cuántos lo usen. Con 1 profesional son S/ 0.54 y la consulta pierde plata. Con 10 son S/ 0.05, y quedan **S/ 0.27 de utilidad** por consulta. Con 100 son S/ 0.005.
+*3. Proyección: cuántos clientes hacen falta.* Un **cliente promedio** mezcla en partes iguales los 3 perfiles de las entrevistas. Paga S/ 69.7 al mes y usa Ceni unas 191 veces. Le deja a Ceni S/ 43.2 de margen de contribución (73% del ingreso sin IGV).
+
+Los costos fijos suben por escalones a medida que crece Ceni (estimado):
+- **US$ 38 al mes (S/ 143) hasta 50 clientes:** servidor, base de datos con respaldo cifrado y dominio.
+- **US$ 100 al mes (S/ 375) de 51 a 200 clientes:** un servidor y una base más grandes.
+- Para el demo, Streamlit Community Cloud es gratis.
+
+| Clientes | Ingresos al mes (sin IGV) | Costos variables | Margen de contribución | Costos fijos | Resultado al mes | Costo total por consulta |
+|---:|---:|---:|---:|---:|---:|---:|
+| 1 | S/ 59 | S/ 16 | S/ 43 | S/ 143 | **−S/ 99** | S/ 0.83 |
+| 4 | S/ 236 | S/ 63 | S/ 173 | S/ 143 | **S/ 30** | S/ 0.27 |
+| 10 | S/ 590 | S/ 158 | S/ 432 | S/ 143 | **S/ 290** | S/ 0.16 |
+| 25 | S/ 1,476 | S/ 395 | S/ 1,081 | S/ 143 | **S/ 938** | S/ 0.11 |
+| 50 | S/ 2,952 | S/ 790 | S/ 2,162 | S/ 143 | **S/ 2,019** | S/ 0.10 |
+| 100 | S/ 5,904 | S/ 1,580 | S/ 4,324 | S/ 375 | **S/ 3,949** | S/ 0.10 |
+| 200 | S/ 11,808 | S/ 3,160 | S/ 8,647 | S/ 375 | **S/ 8,272** | S/ 0.09 |
+
+- **Punto de equilibrio de la operación: 4 clientes.** Con 4 clientes promedio, Ceni ya paga su servidor (S/ 143 ÷ S/ 43.2 = 3.3).
+- **Punto de equilibrio con sueldo:** cada S/ 1,000 de sueldo para la founder necesita **23 clientes más**. Por ejemplo, con un sueldo de S/ 3,000 el equilibrio está en **78 clientes**.
+- **Costo por consulta al crecer:** el costo fijo se reparte entre más consultas, así que el costo total baja de S/ 0.83 con 1 cliente a unos S/ 0.10 desde 50 clientes. El precio se mantiene en S/ 0.50.
 
 **Supuestos:**
 - 22 días de atención al mes;
